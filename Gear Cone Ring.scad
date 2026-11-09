@@ -1,255 +1,190 @@
 // ============================================================================
-// ПРАВИЛЕН КОНИЧЕН ЗЪБЕН ВЕНЕЦ (BEVEL RING GEAR) С ЗЪБИ, ГЛЕДАЩИ НАВЪН
-// Истинска конична геометрия по Тредголд с общ връх на конусите (Apex)
-// Фланецът (Ø43 x 6mm) влиза отвътре и опира във външния 1.2mm праг.
+// КОНИЧЕН ЗЪБЕН ВЕНЕЦ С 3 УШИЧКИ ЗА ВИНТОВЕ М3 (Ø6.0 mm ухо / Ø3.4 mm отвор)
+// - Широк на вътрешното чело (Z=0), тесен на външното чело (Z=6)
+// - Нахлузва се отвън навътре върху фланец Ø43 x 6 mm
+// - 3 ушички на 120° с проходни отвори Ø3.4 mm за винтове M3 (на R = 18.5 mm)
 // ============================================================================
 
 $fn = 90;
 
 /* [Избор на изглед / Експорт] */
-// 0 = Сглобка: Коничен венец + Фланец + Задвижващ пиньон под 90° (проверка на зацепването)
-// 1 = 1/2 Надлъжен разрез (вижда се посоката на конуса навън и 1.2mm праг)
-// 2 = Разглобен изглед (Exploded View)
-// 3 = КОНИЧЕН ВЕНЕЦ ЗА ПЕЧАТ (легнал на широката си задна основа Z=0, зъбите гледат нагоре/навън!)
-// 4 = Задвижващ коничен пиньон (Z=13) за печат
+// 0 = Сглобка: Венец + Фланец (показва съосността на ушичките с отворите на фланеца)
+// 1 = 1/2 Разрез през едно от ушите (инспекция на леглото и 3.4mm отвор)
+// 2 = Разглобен изглед (посока на монтаж отвън навътре)
+// 3 = ЗА ПЕЧАТ: Обърнат върху плоското чело на ушичките (Z=0) -> 0% съпорти!
+// 4 = ЗА ПЕЧАТ: Стъпил върху широката основа (Z=0)
 view_mode = 0;
 
-/* [Кинематични параметри на коничната предавка (90° оси)] */
-m_bevel         = 1.5;   // Външен модул (Outer Transverse Module)
-z_ring          = 36;    // Брой зъби на венеца (Делителен диаметър d = 54.0 mm)
-z_pinion        = 12;    // Брой зъби на пиньона (Предавателно отношение 3:1)
+/* [Параметри на коничните зъби] */
+z_ring          = 36;    // Брой зъби
+m_outer         = 1.6;   // Модул на широката страна (делителен диаметър 57.6 mm)
 alpha           = 20;    // Ъгъл на профила (20°)
+cone_angle      = 45;    // Наклон на конуса (45°)
 
-/* [Геометрия на венеца и леглото за фланеца] */
+/* [Геометрия на леглото за фланеца] */
 flange_od       = 43.00; // Външен диаметър на фланеца
 flange_thick    = 6.00;  // Дебелина на фланеца
+pocket_d        = 42.95; // Вътрешен диаметър на леглото (лек прес-фит за Ø43.00 mm)
+pocket_depth    = 6.00;  // Пълна дълбочина за фланеца
 
-pocket_d        = 42.90; // Легло с 0.10mm натяг за Ø43.0mm фланец
-pocket_depth    = 6.00;  // Пълна дълбочина 6.0mm за фланеца
-lip_thick       = 1.20;  // Външен опорен праг = 1.2 mm
-ring_total_h    = pocket_depth + lip_thick; // 7.20 mm обща аксиална дебелина
+/* [Опорен праг и ушички за М3] */
+lip_thick       = 1.50;  // Дебелина на прага и ушичките (1.5 mm)
+rim_lip_w       = 1.20;  // Ширина на периферния праг по целия кръг (1.2 mm)
 
-// Вътрешен диаметър на 1.2mm праг (34.0 mm покрива и М3 отворите; 40.0 mm за чист периферен ръб)
-lip_id          = 34.00;
-pair_angle      = 48.68; // Ъгъл за синхронизиране на М3 отворите с фланеца
+lug_r_hole      = 18.50; // Радиус на центровете на отворите (18.5 mm от основния модел)
+lug_od          = 7.00;  // Външен диаметър на ушичката около отвора (6.0 mm)
+m3_hole_d       = 3.80;  // Проходен отвор за винт М3 (3.4 mm)
+pair_angle      = 48.68; // Фазов ъгъл на отворите от основния модел
 
-// ============================================================================
-// ТОЧНИ ГЕОМЕТРИЧНИ ИЗЧИСЛЕНИЯ НА КОНУСИТЕ (GLEASON / TREDGOLD)
-// ============================================================================
-
-// 1. Делителни диаметри и конусни ъгли
-d_ring          = m_bevel * z_ring;             // 54.0 mm
-d_pinion        = m_bevel * z_pinion;           // 18.0 mm
-r_ring          = d_ring / 2;                   // 27.0 mm
-r_pinion        = d_pinion / 2;                 // 9.0 mm
-
-gamma_ring      = atan(z_ring / z_pinion);      // Делителен ъгъл на венеца = 71.565°
-gamma_pinion    = 90 - gamma_ring;              // Делителен ъгъл на пиньона = 18.435°
-
-// 2. Външно конусно разстояние (Outer Cone Distance Re)
-Re              = r_ring / sin(gamma_ring);     // 28.46 mm
-
-// 3. Височина на главата (ha), петата (hf) и ъгли на изменение
-ha              = 1.00 * m_bevel;               // 1.50 mm
-hf              = 1.25 * m_bevel;               // 1.875 mm
-theta_a         = atan(ha / Re);                // Ъгъл на главата на зъба
-theta_f         = atan(hf / Re);                // Ъгъл на корена на зъба
-
-// 4. Аксиална позиция на общия връх на конуса (Apex)
-// Z = 0 е широката вътрешна страна (към диференциала), Z = 7.2 е външната страна (с 1.2mm праг)
-// Така зъбите гледат НАВЪН (към Z+) и се зацепват с пиньон от външната страна!
-apex_z_ring     = r_ring / tan(gamma_ring);     // 9.00 mm (точно на оста на пиньона!)
+// Обща височина на венеца
+ring_total_h    = pocket_depth + lip_thick; // 7.50 mm
 
 // ============================================================================
-// ГЛАВНО УПРАВЛЕНИЕ НА ИЗГЛЕДИТЕ
+// УПРАВЛЕНИЕ НА ИЗГЛЕДИТЕ
 // ============================================================================
 
 if (view_mode == 0) {
-    // Пълна сглобка със задвижващия пиньон под 90°
-    color("Gold") bevel_ring_gear_outward();
-    color("LightSteelBlue", 0.7) flange_in_pocket();
-
-    // Пиньон, зацепен от външната страна (в общия апекс Z = apex_z_ring)
-    color("Crimson")
-    translate([0, -apex_z_ring / tan(gamma_pinion), apex_z_ring])
-    rotate([-90, 0, 0])
-    rotate([0, 0, 180 / z_pinion])
-        bevel_pinion_true();
+    color("Gold") bevel_ring_m3_lugs();
+    color("LightSteelBlue", 0.65) flange_reference();
 }
 else if (view_mode == 1) {
-    // 1/2 разрез за проверка на леглото, прага 1.2mm и наклона на зъбите навън
+    // Разрез точно през едното ухо и отвора 3.4 mm
+    rot_cut = -(pair_angle/2 + 60);
     difference() {
-        union() {
-            color("Gold") bevel_ring_gear_outward();
-            color("LightSteelBlue", 0.85) flange_in_pocket();
+        rotate([0, 0, rot_cut]) {
+            color("Gold") bevel_ring_m3_lugs();
+            color("LightSteelBlue", 0.8) flange_reference();
         }
-        translate([-50, 0, -10])
+        translate([-50, -50, -10])
             cube([100, 50, 40]);
     }
 }
 else if (view_mode == 2) {
-    // Разглобен изглед: Фланецът влиза отдолу (отвътре навън) до 1.2mm праг
     color("Gold")
-    translate([0, 0, 15])
-        bevel_ring_gear_outward();
+    translate([0, 0, 14])
+        bevel_ring_m3_lugs();
 
-    color("LightSteelBlue", 0.85)
-        flange_in_pocket();
+    color("LightSteelBlue", 0.8)
+        flange_reference();
 }
 else if (view_mode == 3) {
-    // ЗА ПЕЧАТ: Венецът лежи на широката си основа при Z = 0, а конусните зъби гледат нагоре!
-    // Идеална ориентация за FDM печат без никакви поддръжки (0% overhangs по зъбите).
-    bevel_ring_gear_outward();
+    // ЗА ПЕЧАТ (Препоръчителен): Лежи върху плоското външно чело с ушичките на Z=0 (без съпорти)
+    translate([0, 0, ring_total_h])
+    rotate([180, 0, 0])
+        bevel_ring_m3_lugs();
 }
 else if (view_mode == 4) {
-    // Задвижващ пиньон за печат (стъпил на широката си основа)
-    bevel_pinion_true();
+    // ЗА ПЕЧАТ (Алтернативен): Лежи върху широката основа на Z=0
+    bevel_ring_m3_lugs();
 }
 
 // ============================================================================
-// МОДУЛ: КОНИЧЕН ВЕНЕЦ СЪС ЗЪБИ, НАКЛОНЕНИ НАВЪН
+// МОДУЛ: КОНИЧЕН ВЕНЕЦ С 3 УШИЧКИ (Ø6.0 mm) И ОТВОРИ (Ø3.4 mm)
 // ============================================================================
 
-module bevel_ring_gear_outward() {
-    // Мащабиране към общия връх на конуса (Apex при Z = apex_z_ring)
-    // За да пресечем цялата височина ring_total_h (7.2mm), екструдираме до h_ext = 7.5mm
-    h_ext  = ring_total_h + 0.5;
-    s_ring = (apex_z_ring - h_ext) / apex_z_ring;
+module bevel_ring_m3_lugs() {
+    r_pitch_base = (z_ring * m_outer) / 2; // 28.80 mm
+    apex_h       = r_pitch_base / tan(cone_angle);
+    scale_top    = (apex_h - ring_total_h) / apex_h;
 
-    // Външни радиуси на лицевия конус (върховете на зъбите) при Z=0 и Z=ring_total_h
-    r_tip_base = r_ring + ha * cos(gamma_ring);
-    r_tip_top  = r_tip_base * ((apex_z_ring - ring_total_h) / apex_z_ring);
-
-    // Радиус на коренния конус (дъното между зъбите) при Z=0 и Z=ring_total_h
-    r_root_base = r_ring - hf * cos(gamma_ring);
-    r_root_top  = r_root_base * ((apex_z_ring - ring_total_h) / apex_z_ring);
+    r_tip_0      = r_pitch_base + m_outer * 1.0;
+    r_tip_top    = r_tip_0 * scale_top;
+    r_root_0     = r_pitch_base - m_outer * 1.25;
+    r_root_top   = max(r_root_0 * scale_top, (flange_od / 2) + 1.4);
 
     difference() {
         union() {
-            // 1. Истински коничен зъбен венец (гледащ навън към Z+)
+            // 1. КОНИЧЕН ЗЪБЕН ВЕНЕЦ (широк при Z=0, стеснява се към Z=7.5)
             intersection() {
-                // Сходяща еволвентна геометрия към апекса (Z = 9.0 mm)
-                linear_extrude(height = h_ext, scale = s_ring, slices = 50)
-                    bevel_gear_2d_section(
-                        r_pitch = r_ring,
-                        z_teeth = z_ring,
-                        gamma   = gamma_ring,
-                        ha_val  = ha,
-                        hf_val  = hf
-                    );
+                linear_extrude(height = ring_total_h, scale = scale_top, slices = 45)
+                    involute_gear_2d(z = z_ring, mod = m_outer, pressure_angle = alpha);
 
-                // Лицев конус (ограничава височината на зъбите точно по конуса)
-                cylinder(r1 = r_tip_base, r2 = r_tip_top, h = ring_total_h);
+                cylinder(r1 = r_tip_0, r2 = r_tip_top, h = ring_total_h);
             }
 
-            // 2. Плътен конусен пръстен в основата на зъбите (корпус около фланеца)
-            cylinder(
-                r1 = r_root_base + 0.2,
-                r2 = max(r_root_top + 0.2, (flange_od / 2) + 1.6),
-                h  = ring_total_h
-            );
+            // 2. НОСЕЩА ГРИВНА ОКОЛО ЛЕГЛОТО НА ФЛАНЕЦА
+            cylinder(r1 = r_root_0 + 0.3, r2 = r_root_top + 0.2, h = ring_total_h);
+
+            // 3. ТРИ УШИЧКИ (Ø6.0 mm) НА 120° НА ВЪНШНОТО ЧЕЛО (от Z=6.0 до Z=7.5)
+            for (i = [0 : 2]) {
+                rotate([0, 0, i * 120 + pair_angle/2 + 60])
+                translate([0, 0, pocket_depth])
+                linear_extrude(height = lip_thick)
+                    lug_2d_shape();
+            }
         }
 
         // --------------------------------------------------------------------
-        // ВЪТРЕШНО ЛЕГЛО ЗА ФЛАНЕЦА И 1.2mm ПРАГ
+        // ОТНЕМАНИЯ
         // --------------------------------------------------------------------
-        // Тъй като зъбите гледат навън (към Z = 7.2mm):
-        // - Прагът 1.2mm се намира от външната страна (от Z = 6.0 до Z = 7.2mm)
-        // - Фланецът влиза откъм диференциала (от Z = 0 до Z = 6.0mm) и опира в прага!
 
-        // 3. Легло Ø42.90mm с дълбочина 6.0mm (от Z = -0.1 до Z = 6.0mm)
+        // 4. Легло за фланеца Ø42.95 mm (от Z = -0.1 до Z = 6.0 mm)
         translate([0, 0, -0.1])
             cylinder(d = pocket_d, h = pocket_depth + 0.1);
 
-        // Водеща фаска (0.5mm) на входа на леглото (при Z = 0)
+        // Водеща фаска (0.5mm) при Z = 0 за лесно подвеждане на фланеца
         translate([0, 0, -0.05])
             cylinder(d1 = pocket_d + 0.8, d2 = pocket_d, h = 0.55);
 
-        // 4. Вътрешен проходен отвор през 1.2mm праг (Ø34.0 mm)
-        translate([0, 0, -1.0])
-            cylinder(d = lip_id, h = ring_total_h + 2.0);
+        // 5. Централен отвор през външния праг (оставя 1.2mm периферен праг и трите ушички)
+        difference() {
+            translate([0, 0, pocket_depth - 0.1])
+                cylinder(d = flange_od - 2 * rim_lip_w, h = lip_thick + 0.5);
 
-        // 5. Трите отвора за стягащи болтове M3 през 1.2mm праг (R = 18.5 mm)
+            // Запазваме материала на трите ушички
+            for (i = [0 : 2]) {
+                rotate([0, 0, i * 120 + pair_angle/2 + 60])
+                translate([0, 0, pocket_depth - 0.2])
+                linear_extrude(height = lip_thick + 1.0)
+                    lug_2d_shape();
+            }
+        }
+
+        // 6. ТРИ ПРОХОДНИ ОТВОРА Ø3.4 mm ПРЕЗ УШИЧКИТЕ ЗА ВИНТОВЕ М3
         for (i = [0 : 2]) {
             rotate([0, 0, i * 120 + pair_angle/2 + 60])
-            translate([18.5, 0, pocket_depth - 0.5])
-                cylinder(d = 3.2, h = lip_thick + 1.5);
+            translate([lug_r_hole, 0, pocket_depth - 1.0])
+                cylinder(d = m3_hole_d, h = lip_thick + 2.0);
         }
     }
 }
 
-// ============================================================================
-// МОДУЛ: ИСТИНСКИ КОНИЧЕН ПИНЬОН (Z=12) ЗА 90° ЗАЦЕПВАНЕ
-// ============================================================================
-
-module bevel_pinion_true() {
-    pinion_w     = 6.5; // Работна ширина на пиньона
-    apex_z_pin   = r_pinion / tan(gamma_pinion); // 27.0 mm
-    s_pinion     = (apex_z_pin - pinion_w) / apex_z_pin;
-
-    r_p_tip_base = r_pinion + ha * cos(gamma_pinion);
-    r_p_tip_top  = r_p_tip_base * s_pinion;
-
-    difference() {
-        union() {
-            // Конични зъби на пиньона
-            intersection() {
-                linear_extrude(height = pinion_w, scale = s_pinion, slices = 40)
-                    bevel_gear_2d_section(
-                        r_pitch = r_pinion,
-                        z_teeth = z_pinion,
-                        gamma   = gamma_pinion,
-                        ha_val  = ha,
-                        hf_val  = hf
-                    );
-
-                cylinder(r1 = r_p_tip_base, r2 = r_p_tip_top, h = pinion_w);
-            }
-
-            // Задна опорна шийка на пиньона
-            translate([0, 0, -4.0])
-                cylinder(r = r_pinion - hf * cos(gamma_pinion) + 0.5, h = 4.1);
-        }
-
-        // D-образен отвор Ø6.0mm (плоскост на 4.8mm)
-        translate([0, 0, -5.0])
-            intersection() {
-                cylinder(d = 6.0, h = pinion_w + 10.0);
-                translate([-3.0, -3.0, 0])
-                    cube([6.0, 4.8, pinion_w + 10.0]);
-            }
+// 2D форма на една ушичка (Ø6.0 mm около отвора, преливаща към пръстена)
+module lug_2d_shape() {
+    hull() {
+        translate([lug_r_hole, 0])
+            circle(d = lug_od);
+        translate([flange_od/2 + 0.5, 0])
+            circle(d = lug_od + 1.5);
     }
 }
 
 // ============================================================================
-// МОДУЛ: 2D ПРОФИЛ НА КОНИЧНО КОЛЕЛО ПО МЕТОДА НА ТРЕДГОЛД
-// Проектира правилен еволвентен зъб спрямо конусния ъгъл gamma
+// МОДУЛ: ЕВОЛВЕНТЕН 2D ПРОФИЛ НА ЗЪБИТЕ
 // ============================================================================
 
-module bevel_gear_2d_section(r_pitch, z_teeth, gamma, ha_val, hf_val) {
-    // Радиуси, проектирани в равнината на основата (Z=0)
-    r_a = r_pitch + ha_val * cos(gamma);
-    r_d = r_pitch - hf_val * cos(gamma);
-    r_b = r_pitch * cos(alpha);
+module involute_gear_2d(z, mod, pressure_angle) {
+    r_p = (mod * z) / 2;
+    r_b = r_p * cos(pressure_angle);
+    r_a = r_p + mod * 1.0;
+    r_d = r_p - mod * 1.25;
 
     union() {
-        circle(r = r_d + 0.05, $fn = z_teeth * 4);
-        for (i = [0 : z_teeth - 1]) {
-            rotate([0, 0, i * (360 / z_teeth)])
-                bevel_single_tooth_2d(z_teeth, r_pitch, r_b, r_a, r_d);
+        circle(r = r_d + 0.05, $fn = z * 4);
+        for (i = [0 : z - 1]) {
+            rotate([0, 0, i * (360 / z)])
+                single_involute_tooth(z, r_p, r_b, r_a, r_d);
         }
     }
 }
 
-module bevel_single_tooth_2d(z, r_p, r_b, r_a, r_d) {
-    steps = 20;
+module single_involute_tooth(z, r_p, r_b, r_a, r_d) {
+    steps = 18;
     t_max = (r_a > r_b) ? sqrt(pow(r_a / r_b, 2) - 1) : 0;
     t_min = (r_d > r_b) ? sqrt(pow(r_d / r_b, 2) - 1) : 0;
     t_p   = (r_p > r_b) ? sqrt(pow(r_p / r_b, 2) - 1) : 0;
     inv_p = (t_p * 180 / PI) - atan(t_p);
-
-    // Ъглова дебелина на зъба върху делителната окръжност
-    s_ang = (180 / z);
+    s_ang = 180 / z;
     off   = (s_ang / 2) + inv_p;
 
     inv_pts = [
@@ -267,37 +202,33 @@ module bevel_single_tooth_2d(z, r_p, r_b, r_a, r_d) {
 }
 
 // ============================================================================
-// МОДУЛ: ИЛЮСТРАТИВЕН ФЛАНЕЦ В ЛЕГЛОТО (ЗА ПРОВЕРКА НА ПОСОКАТА)
+// МОДУЛ: РЕФЕРЕНТЕН ФЛАНЕЦ (ОТ ОСНОВНИЯ МОДЕЛ)
 // ============================================================================
 
-module flange_in_pocket() {
-    // Външната страна на фланеца (Z = 6.0) опира в 1.2mm праг,
-    // а вътрешната страна (с лагерното гнездо 10x15x4) е при Z = 0 (към сателитите).
-    translate([0, 0, pocket_depth])
+module flange_reference() {
     rotate([180, 0, 0])
-        difference() {
-            translate([0, 0, -flange_thick])
-                cylinder(d = flange_od, h = flange_thick);
+    difference() {
+        translate([0, 0, -flange_thick])
+            cylinder(d = flange_od, h = flange_thick);
 
-            // Лагерно легло 10x15x4 от вътрешната страна на фланеца
-            translate([0, 0, -4.2])
-                cylinder(d = 14.88, h = 4.3);
-            translate([0, 0, -flange_thick - 0.5])
-                cylinder(d = 11.4, h = 2.5);
+        translate([0, 0, -4.2])
+            cylinder(d = 14.88, h = 4.3);
+        translate([0, 0, -flange_thick - 0.5])
+            cylinder(d = 11.4, h = 2.5);
 
-            // Отвори за сателитни оси и М3 болтове
-            for (i = [0 : 2]) {
-                rotate([0, 0, i * 120])
-                translate([15.61, 0, -flange_thick - 0.5])
-                    cylinder(d = 8.80, h = flange_thick + 1.0);
+        for (i = [0 : 2]) {
+            rotate([0, 0, i * 120])
+            translate([15.61, 0, -flange_thick - 0.5])
+                cylinder(d = 8.80, h = flange_thick + 1.0);
 
-                rotate([0, 0, i * 120 + pair_angle])
-                translate([15.61, 0, -flange_thick - 0.5])
-                    cylinder(d = 5.84, h = flange_thick + 1.0);
+            rotate([0, 0, i * 120 + pair_angle])
+            translate([15.61, 0, -flange_thick - 0.5])
+                cylinder(d = 5.84, h = flange_thick + 1.0);
 
-                rotate([0, 0, i * 120 + pair_angle/2 + 60])
-                translate([18.5, 0, -flange_thick - 0.5])
-                    cylinder(d = 3.2, h = flange_thick + 1.0);
-            }
+            // Трите отвора за винтове М3 във фланеца (на R = 18.5 mm)
+            rotate([0, 0, i * 120 + pair_angle/2 + 60])
+            translate([lug_r_hole, 0, -flange_thick - 0.5])
+                cylinder(d = 3.20, h = flange_thick + 1.0);
         }
+    }
 }
