@@ -108,7 +108,7 @@ else if (view_mode == 3) {
 module gear_internal_bore() {
     eps = 0.05;
     dogbone_square_hole(s2 + clearance, s2_depth + eps, 0.65);
-    translate([0, 0, s2_depth - eps])
+    translate([0, 0, s2_depth])
         tapered_top_section(is_hole = true);
 }
 
@@ -169,7 +169,7 @@ module dogbone_square_hole(s, h, db_d = 0.65) {
     union() {
         square([s, s], center = true);
         for (dx = [-1, 1], dy = [-1, 1])
-            translate([dx * offset_pos, dy * offset_pos]) circle(d = db_d, $fn = 24);
+            translate([dx * offset_pos, dy * offset_pos]) circle(d = db_d, $fn = 32);
     }
 }
 
@@ -237,10 +237,11 @@ module single_tooth_2d(z, x, r_p, r_b, r_a, r_d) {
 module rounded_polygon_2d(n_sides, outer_r, corner_r, extra_offset = 0) {
     R_centers = max(0.05, outer_r - corner_r);
     eff_r = corner_r + extra_offset;
-    rotate([0, 0, 90])
+    rot_align = (n_sides == 3) ? 90 : 45;
+    rotate([0, 0, rot_align])
     hull() {
         for (i = [0 : n_sides - 1])
-            rotate([0, 0, i * 360 / n_sides]) translate([R_centers, 0]) circle(r = eff_r, $fn = 36);
+            rotate([0, 0, i * 360 / n_sides]) translate([R_centers, 0]) circle(r = eff_r, $fn = 48);
     }
 }
 
@@ -257,7 +258,7 @@ module tapered_top_section(is_hole = false) {
             translate([0, 0, h3_straight - eps])
             linear_extrude(height = eps) rounded_polygon_2d(3, top_outer_r, top_corner_r, extra_offset = rad_off);
             translate([0, 0, h3_straight + pyr_h - eps])
-            linear_extrude(height = eps) rounded_polygon_2d(3, top_outer_r, top_corner_r, extra_offset = rad_off);
+            linear_extrude(height = eps) rounded_polygon_2d(3, tip_outer_r, tip_corner_r, extra_offset = rad_off);
         }
     }
 }
