@@ -1,0 +1,349 @@
+// ============================================================================
+// ИЗЧИСТЕН МОДЕЛ: КАСЕТА НА ДИФЕРЕНЦИАЛА (ФЛАНЦИ + ОТДЕЛНИ ОСИ + САТЕЛИТИ Z=10)
+// СИНХРОНИЗИРАН С ВСИЧКИ КОРЕКЦИИ:
+// 1. Вътрешно разстояние между фланците: carrier_gap = 28.0 mm (общо 40.0 mm)
+// 2. Отделни сателитни оси (view_mode = 7, 6 бр.): 16 + 17 + 7 = 40.0 mm, фаски 0.5x45°
+// 3. Основи на осите: ф5.40 mm -> проходни отвори ф5.55 mm във фланеца
+// 4. Работна шийка: ф4.40 mm (17.0 mm) + отвор в планетата: ф4.55 mm
+// 5. Планети Z=10: 14.6 mm зъби + 2.0 mm шийка = 16.6 mm (0.4 mm аксиална хлабина)
+// 6. Шевронен фланец Z=27 (m=1.2, x=0.0 -> OD=34.80 mm), втулка 1.0 mm, легло 5.20 mm
+// ============================================================================
+
+$fn = 90;
+
+/* [Избор на изглед / Експорт] */
+// 0 = Сглобка на касетата със сателитите (Z=10), отделните оси и лагерите 6700
+// 1 = 1/2 надлъжен разрез на касетата
+// 2 = Разглобен изглед (Exploded View)
+// 3 = Шевронен фланец Z=27 (x=0.0, OD=34.80mm) БЕЗ конзолни оси - за печат (2 броя)
+// 5 = Сателитно колело Z=10 LH - 16.6mm (принтират се 3 броя)
+// 6 = Сателитно колело Z=10 RH - 16.6mm (принтират се 3 броя)
+// 7 = Единична сателитна ос 40.0mm (вертикално за печат с Brim - 6 броя)
+view_mode = 0;
+
+/* [Височина на разглобяване за Exploded View] */
+explode_dist     = 28.0;
+
+/* [Параметри за водещите фаски] */
+brg_lead_chamfer = 0.40; // 0.4 mm водеща фаска на входа на лагерното легло
+tip_lead_chamfer = 0.25; // 0.25 mm водеща фаска на отворите във фланеца
+pin_end_chamfer  = 0.50; // 0.5 mm x 45° фаски от двете страни на сателитните оси
+
+/* [Външен ШЕВРОНЕН зъбен венец на фланците - Модул 1.2, БЕЗ КОРЕКЦИЯ] */
+ring_m           = 1.2;   // Модул 1.2 за външното задвижване
+ring_z           = 27;    // 27 зъба (OD = 34.80 mm, дъно R = 14.70 mm)
+ring_x           = 0.00;  // Без корекция
+ring_beta        = 20;    // Ъгъл на шеврона
+
+/* [Кинематика на сателитите (Z=10) и слънцето (Z=10) - Модул 1.0] */
+m                = 1.0;
+alpha            = 20;
+beta             = 20;
+
+// Слънце Z=10
+z_sun            = 10;
+x_sun            = 0.25;
+
+// Планети Z=10 (14.6 mm зъби + 2.0 mm шийка = 16.6 mm общо)
+z_planet         = 10;
+x_planet         = 0.25;  
+planet_boss_h    = 1.00;  // 1.0 mm дистанционна шайба на фланеца (6 + 1 = 7 mm)
+planet_gear_len  = 14.6;  // Зъбна част 14.6 mm (-0.4 mm за аксиална хлабина)
+planet_neck_len  = 2.0;   // Шийка без зъби 2.0 mm
+planet_neck_od   = 7.40;  // Външен диаметър на шийката на сателита
+planet_total_len = planet_gear_len + planet_neck_len; // 16.6 mm
+bore_journal     = 4.55;  // Отвор в сателита за шийка ф4.40 mm (0.15 mm хлабина)
+
+// Дистанционна шайба около насрещния отвор във фланеца:
+flange_boss_od   = 5.40;  // Изцяло извън лагерното легло ф15.08 mm!
+
+/* [Уравнение за междуосово разстояние при Z_sun=10 и Z_planet=10] */
+r_p_sun          = (m * z_sun) / 2;    // 5.00 mm
+r_p_planet       = (m * z_planet) / 2; // 5.00 mm
+a_sp             = r_p_sun + r_p_planet + m * (x_sun + x_planet) * 0.85; // 10.425 mm!
+a_pp             = 2 * r_p_planet + m * (2 * x_planet) * 0.85;           // 10.425 mm (60 deg!)
+pair_angle       = 2 * asin((a_pp / 2) / a_sp);                          // ТОЧНО 60.00 deg!
+
+/* [Фланци и лагерно гнездо за 6700 (10x15x4 mm)] */
+flange_thick     = 6.0;   
+flange_seat_d    = 15.08; // Гнездо за 15mm лагер 6700 (R = 7.54 mm, от Z=0 надолу)
+seat_depth       = 5.20;  // 5.20 mm дълбочина от Z = 0 до Z = -5.20 mm
+c_collar_h       = flange_thick - seat_depth; // 0.80 mm външен праг
+pass_hole_d      = 13.00; // ТОЧНО 13.00 mm -> 1.00 mm праг за външната гривна на лагера
+
+// Вътрешно аксиално разстояние между двата фланеца (обща дължина на касетата: 6 + 28 + 6 = 40 mm)
+carrier_gap      = 28.0;
+
+/* [Отделни сателитни оси - R = 10.425 mm, обща дължина 16 + 17 + 7 = 40.0 mm] */
+pin_step_h       = 10.00; // Височина на основата НАД вътрешното лице на фланеца (6 + 10 = 16.0 mm)
+pin_base_d       = 5.40;  // Права основа ф5.40 mm
+flange_pin_hole  = 5.55;  // Проходен отвор във фланеца за основата ф5.40 mm (0.15 mm хлабина)
+pin_journal_d    = 4.40;  // Работна шийка ф4.40 mm
+pin_journal_len  = (carrier_gap - pin_step_h - planet_boss_h); // 28 - 10 - 1 = 17.00 mm
+
+pin_tip_d        = 2.90;  // 2.90 mm връх на оста (за насрещния фланец)
+pin_tip_len      = flange_thick + planet_boss_h; // 6.00 + 1.00 = 7.00 mm (наравно с фланеца)
+flange_tip_hole  = 3.15;  // 3.15 mm отвор в насрещния фланец
+
+// ============================================================================
+// ГЛАВНО УПРАВЛЕНИЕ НА ИЗГЛЕДИТЕ
+// ============================================================================
+
+if (view_mode == 0) {
+    carrier_planets_assembly(cutaway = false, exploded = false);
+}
+else if (view_mode == 1) {
+    carrier_planets_assembly(cutaway = true, exploded = false);
+}
+else if (view_mode == 2) {
+    carrier_planets_assembly(cutaway = false, exploded = true);
+}
+else if (view_mode == 3) {
+    translate([0, 0, flange_thick]) carrier_flange();
+}
+else if (view_mode == 5) {
+    planet_gear_short(hand = -1);
+}
+else if (view_mode == 6) {
+    planet_gear_short(hand = 1);
+}
+else if (view_mode == 7) {
+    cantilever_planet_pin();
+}
+
+// ============================================================================
+// МОДУЛ: СГЛОБКА НА ФЛАНЦИТЕ, ОТДЕЛНИТЕ ОСИ, САТЕЛИТИТЕ (Z=10) И ЛАГЕРИТЕ 6700
+// ============================================================================
+
+module carrier_planets_assembly(cutaway = false, exploded = false) {
+    ez1 = exploded ? -explode_dist : 0;
+    ez2 = exploded ? explode_dist : 0;
+    epin = exploded ? explode_dist * 0.45 : 0;
+    
+    brg10_start_z = -seat_depth + 0.05; 
+
+    difference() {
+        union() {
+            // 1. ЛЯВ ФЛАНЕЦ С ЛАГЕР 6700, 3 ОТДЕЛНИ ОСИ И 3 САТЕЛИТА Z=10 (LH)
+            translate([0, 0, ez1]) {
+                color("LightSteelBlue", 0.85)
+                    carrier_flange();
+
+                color("Silver")
+                translate([0, 0, brg10_start_z])
+                    bearing_ring(od = 15.0, id = 10.0, w = 4.0);
+
+                // 3 отделни оси (влизат от Z = -flange_thick през фланеца)
+                color("OrangeRed") {
+                    for (i = [0 : 2]) {
+                        rotate([0, 0, i * 120])
+                        translate([a_sp, 0, -flange_thick + epin])
+                            cantilever_planet_pin();
+                    }
+                }
+
+                color("LimeGreen") {
+                    for (i = [0 : 2]) {
+                        rotate([0, 0, i * 120])
+                        translate([a_sp, 0, pin_step_h + epin])
+                            planet_gear_short(hand = -1);
+                    }
+                }
+            }
+
+            // 2. ДЕСЕН ФЛАНЕЦ С ЛАГЕР 6700, 3 ОТДЕЛНИ ОСИ И 3 САТЕЛИТА Z=10 (RH)
+            translate([0, 0, carrier_gap + ez2])
+            rotate([180, 0, pair_angle]) {
+                color("SlateGray", 0.85)
+                    carrier_flange();
+
+                color("Silver")
+                translate([0, 0, brg10_start_z])
+                    bearing_ring(od = 15.0, id = 10.0, w = 4.0);
+
+                // 3 отделни оси
+                color("OrangeRed") {
+                    for (i = [0 : 2]) {
+                        rotate([0, 0, i * 120])
+                        translate([a_sp, 0, -flange_thick + epin])
+                            cantilever_planet_pin();
+                    }
+                }
+
+                color("Gold") {
+                    for (i = [0 : 2]) {
+                        rotate([0, 0, i * 120])
+                        translate([a_sp, 0, pin_step_h + epin])
+                            planet_gear_short(hand = 1);
+                    }
+                }
+            }
+        }
+
+        if (cutaway) {
+            translate([-50, 0, -40])
+                cube([100, 50, 120]);
+        }
+    }
+}
+
+// ============================================================================
+// МОДУЛИ ЗА ДЕТАЙЛИТЕ
+// ============================================================================
+
+// 1. ШЕВРОНЕН ФЛАНЕЦ Z=27 (x=0.0 -> OD=34.80mm, плосък за печат с отвори за осите!)
+module carrier_flange() {
+    difference() {
+        union() {
+            // Външен шевронен венец без корекция
+            translate([0, 0, -flange_thick])
+                herringbone_gear_3d(z = ring_z, m_val = ring_m, w = flange_thick, beta_val = ring_beta, x_val = ring_x, hand = 1);
+
+            // 3 дистанционни шайби (ф5.40mm, височина 1.0mm) около отворите ф3.15mm
+            for (i = [0 : 2]) {
+                rotate([0, 0, i * 120 + pair_angle])
+                translate([a_sp, 0, -0.1])
+                    cylinder(d = flange_boss_od, h = planet_boss_h + 0.1);
+            }
+        }
+
+        // А. ПРОХОДЕН ОТВОР ф13.00 mm през целия фланец (0.80mm праг откъм Z = -6.0)
+        translate([0, 0, -flange_thick - 0.5])
+            cylinder(d = pass_hole_d, h = flange_thick + 1.0);
+
+        // Б. ЛЕГЛО ЗА ЛАГЕР 6700 (ф15.08 mm, от Z = -5.20 до Z = 0.00)
+        translate([0, 0, -seat_depth])
+            cylinder(d = flange_seat_d, h = seat_depth + 0.1);
+
+        // В. 0.4 mm водеща фаска на вътрешния вход на лагерното легло (при Z = 0.00)
+        translate([0, 0, -brg_lead_chamfer])
+            cylinder(d1 = flange_seat_d, d2 = flange_seat_d + 0.4, h = brg_lead_chamfer + 0.05);
+
+        // Г. 3 проходни отвора (ф3.15 mm) за върховете на насрещните оси (ф2.90 mm)
+        for (i = [0 : 2]) {
+            rotate([0, 0, i * 120 + pair_angle]) {
+                translate([a_sp, 0, -flange_thick - 0.5])
+                    cylinder(d = flange_tip_hole, h = flange_thick + planet_boss_h + 1.0);
+                    
+                translate([a_sp, 0, planet_boss_h - tip_lead_chamfer])
+                    cylinder(d1 = flange_tip_hole, d2 = flange_tip_hole + 0.4, h = tip_lead_chamfer + 0.05);
+            }
+        }
+
+        // Д. 3 проходни отвора (ф5.55 mm) за основите на отделните сателитни оси (ф5.40 mm)
+        for (i = [0 : 2]) {
+            rotate([0, 0, i * 120]) {
+                translate([a_sp, 0, -flange_thick - 0.5])
+                    cylinder(d = flange_pin_hole, h = flange_thick + 1.0);
+
+                // Лека водеща фаска на входа на отвора (при Z = 0.00)
+                translate([a_sp, 0, -tip_lead_chamfer])
+                    cylinder(d1 = flange_pin_hole, d2 = flange_pin_hole + 0.4, h = tip_lead_chamfer + 0.05);
+            }
+        }
+    }
+}
+
+// 2. ОТДЕЛНА САТЕЛИТНА ОС (16 + 17 + 7 = 40.0 mm, фаски 0.5x45° от двете страни!)
+module cantilever_planet_pin() {
+    base_total_h = flange_thick + pin_step_h; // 6.00 + 10.00 = 16.00 mm обща дължина на основата
+    c = pin_end_chamfer;                      // 0.50 mm x 45°
+
+    union() {
+        // Долна фаска 0.5x45° на основата (от Z = 0 до Z = 0.5)
+        cylinder(d1 = pin_base_d - 2 * c, d2 = pin_base_d, h = c);
+
+        // Плътна права основа ф5.40 mm (до Z = 16.00 mm)
+        translate([0, 0, c - 0.05])
+            cylinder(d = pin_base_d, h = base_total_h - c + 0.05);
+
+        // Работна шийка за сателита ф4.40 mm (дължина 17.00 mm)
+        translate([0, 0, base_total_h - 0.05])
+            cylinder(d = pin_journal_d, h = pin_journal_len + 0.05);
+
+        // Изтънен връх ф2.90 mm (дължина 7.00 mm) с горна фаска 0.5x45°
+        translate([0, 0, base_total_h + pin_journal_len]) {
+            translate([0, 0, -0.05])
+                cylinder(d = pin_tip_d, h = pin_tip_len - c + 0.05);
+            translate([0, 0, pin_tip_len - c])
+                cylinder(d1 = pin_tip_d, d2 = pin_tip_d - 2 * c, h = c);
+        }
+    }
+}
+
+// 3. САТЕЛИТНО КОЛЕЛО С 10 ЗЪБА (Z=10, 14.6mm зъби + 2.0mm шийка = 16.6mm)
+module planet_gear_short(hand = 1) {
+    twist_deg = hand * (planet_gear_len * tan(beta) / r_p_planet) * (180 / PI);
+    difference() {
+        union() {
+            linear_extrude(height = planet_gear_len, twist = twist_deg, slices = planet_gear_len * 8)
+                gear_2d_profile(z_planet, x_planet, m);
+
+            translate([0, 0, planet_gear_len - 0.05])
+                cylinder(d = planet_neck_od, h = planet_neck_len + 0.05);
+        }
+        translate([0, 0, -1])
+            cylinder(d = bore_journal, h = planet_total_len + 2);
+    }
+}
+
+// 4. ПОМОЩНИ МОДУЛИ И ЕВОЛВЕНТЕН ПРОФИЛ
+module herringbone_gear_3d(z, m_val, w, beta_val, x_val = 0, hand = 1) {
+    r_p = (m_val * z) / 2;
+    twist_deg = hand * ((w / 2) * tan(beta_val) / r_p) * (180 / PI);
+    
+    union() {
+        linear_extrude(height = w / 2 + 0.02, twist = twist_deg, slices = w * 4)
+            gear_2d_profile(z, x_val, m_val);
+            
+        translate([0, 0, w])
+            mirror([0, 0, 1])
+            linear_extrude(height = w / 2 + 0.02, twist = twist_deg, slices = w * 4)
+                gear_2d_profile(z, x_val, m_val);
+    }
+}
+
+module bearing_ring(od, id, w) {
+    difference() {
+        cylinder(d = od, h = w);
+        translate([0, 0, -0.5])
+            cylinder(d = id, h = w + 1.0);
+    }
+}
+
+module gear_2d_profile(z, x, mod_val) {
+    r_p = (mod_val * z) / 2;
+    r_b = r_p * cos(alpha);
+    r_a = r_p + mod_val * (1 + x);
+    r_d = r_p - mod_val * (1.25 - x);
+    union() {
+        circle(r = r_d + 0.05, $fn = z * 4);
+        for (i = [0 : z - 1]) {
+            rotate([0, 0, i * 360 / z])
+                single_tooth_2d(z, x, r_p, r_b, r_a, r_d);
+        }
+    }
+}
+
+module single_tooth_2d(z, x, r_p, r_b, r_a, r_d) {
+    steps = 20;
+    t_max = sqrt(pow(r_a / r_b, 2) - 1);
+    t_min = (r_d > r_b) ? sqrt(pow(r_d / r_b, 2) - 1) : 0;
+    t_p = sqrt(pow(r_p / r_b, 2) - 1);
+    inv_p = (t_p * 180 / PI) - atan(t_p);
+    s_angle = (180 / z) + (360 * x * tan(alpha) / (PI * z));
+    offset = (s_angle / 2) + inv_p;
+
+    inv_points = [
+        for (i = [0 : steps])
+            let (t = t_min + i * (t_max - t_min) / steps)
+            let (r = r_b * sqrt(1 + t * t))
+            let (theta = (t * 180 / PI) - atan(t))
+            [r * cos(offset - theta), r * sin(offset - theta)]
+    ];
+    mirror_points = [
+        for (i = [steps : -1 : 0])
+            [inv_points[i][0], -inv_points[i][1]]
+    ];
+    polygon(concat([[0, 0]], inv_points, mirror_points));
+}
