@@ -18,7 +18,7 @@ alpha          = 20;
 beta           = 20;
 
 z_sun          = 10;
-x_sun          = 0.00;  
+x_sun          = 0.25;  // Корекция +0.25 -> съвпада с a_sp = 10.425 mm във "Flanges + Planet Gears.scad"
 sun_total_w    = 8.00;  // Обща ширина 8.00 mm
 center_gap     = 10.00; // Разстояние за телескопа
 r_p_sun        = (m * z_sun) / 2;
@@ -33,7 +33,7 @@ corner_clip = 0.35;
 /* [Параметри на вътрешните отвори и телескопа] */
 clearance      = 0.10;
 s2_depth       = 2.00;  // Дълбочина на квадратния отвор в зъбното колело
-spigot_d       = 4.25;  // Щифт на мъжкото слънце: ф4.10 mm
+spigot_d       = 4.00;  // Щифт на мъжкото слънце: ф4.00 mm (0.10 mm хлабина в тръбата ф4.10)
 tube_id        = 4.10;  // Вътрешен диаметър на тръбата на женското слънце: ф4.10 mm
 tube_od        = 7.2;
 spigot_gap     = 0.2;
@@ -119,7 +119,7 @@ module sun_gear_male(hand = 1) {
         union() {
             linear_extrude(height = sun_total_w, twist = twist_deg, slices = 50, convexity = 10)
                 gear_2d_profile(z_sun, x_sun, m);
-            // Щифт с диаметър spigot_d = 4.10 mm
+            // Щифт с диаметър spigot_d = 4.00 mm
             translate([0, 0, sun_total_w - 0.01]) 
                 cylinder(d = spigot_d, h = spigot_len - 0.4 + 0.01);
             translate([0, 0, sun_total_w + spigot_len - 0.4 - 0.01]) 
