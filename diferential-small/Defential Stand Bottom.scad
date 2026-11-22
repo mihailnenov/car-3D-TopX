@@ -17,7 +17,12 @@ stand_inner_gap  = 41.8;  // Вътрешно разстояние между о
                           // -> легло 20.9..28.1 mm, праг 28.1..29.9 mm (виж "Square shaft small.scad")
 stand_depth      = 28.0;  // Ширина на колонките по ос Y
 stand_base_h     = 3.0;   // Обща дебелина на основната хоризонтална плоча
-stand_center_z   = 22.0;  // Височина от дъното (Z=0) до центъра на осите (линия на разделяне с капака)
+wheel_axis_drop  = 14.655; // Оста на колелото е под оста на диференциала (крайна предавка a_final
+                           // в "Helical Gear Deferantial - New Small.scad": 1.2 * (12 + 0.25 * 0.85))
+floor_below_wheel_axis = 12.0; // Горната повърхност на пода е ТОЧНО 12.0 mm под оста на колелото
+stand_center_z   = stand_base_h + wheel_axis_drop + floor_below_wheel_axis;
+                           // 3.0 + 14.655 + 12.0 = 29.655 mm от дъното (Z=0) до центъра на осите
+                           // (линия на разделяне с капака)
 stand_pillar_w   = 4.0;   // Тънка дебелина на вертикалните подпори (4.0 mm)
 
 /* [Подсилващи полу-шайби (босове) за лагерите] */
@@ -39,6 +44,16 @@ ear_ext          = 12.0;  // Колко да излизат монтажните
 mount_hole_d     = 3.8;   // Проходен отвор ф3.8 mm за болт/винт M3.5
 mount_boss_d     = 10.0;  // Външен диаметър на заобленото монтажно ухо
 
+// Достъп до размерите от други файлове (use <...> внася само модули и функции, не и променливи)
+function stand_param(key) =
+    let (t = [
+        ["stand_center_z", stand_center_z], ["stand_inner_gap", stand_inner_gap],
+        ["stand_base_h", stand_base_h], ["floor_below_wheel_axis", floor_below_wheel_axis],
+        ["wheel_axis_drop", wheel_axis_drop]
+    ], i = search([key], t)[0])
+    assert(is_num(i), str("stand_param: непознат ключ ", key))
+    t[i][1];
+
 // ============================================================================
 // РЕНДЕРИРАНЕ
 // ============================================================================
@@ -53,6 +68,7 @@ module diff_u_stand() {
     // Обща дължина на основата включва подпорите от двете страни
     total_len = stand_inner_gap + 2 * total_boss_w; 
     ear_y     = stand_depth / 2 + ear_ext - mount_boss_d / 2;
+    boss_overhang = total_boss_w - stand_pillar_w; // 5.0 mm издадена навън част на шайбата
 
     color("SteelBlue")
     difference() {
@@ -103,15 +119,23 @@ module diff_u_stand() {
                     }
                 }
 
-                // Полу-шайба (бос) около лагерното легло (затворена до Z = stand_center_z)
+                // Полу-шайба (бос) около лагерното легло (затворена до Z = stand_center_z).
+                // Издадената навън част (извън 4 mm подпора) е подпряна отдолу под 45 deg
+                // (hull с копие, свалено с размера на издаването) - печат без подпори.
                 intersection() {
-                    translate([side * (stand_inner_gap / 2 + total_boss_w / 2), 0, stand_center_z])
-                        rotate([0, 90, 0])
-                            cylinder(d = boss_od, h = total_boss_w, center = true);
+                    hull() {
+                        translate([side * (stand_inner_gap / 2 + total_boss_w / 2), 0, stand_center_z])
+                            rotate([0, 90, 0])
+                                cylinder(d = boss_od, h = total_boss_w, center = true);
+
+                        translate([side * (stand_inner_gap / 2 + stand_pillar_w / 2), 0, stand_center_z - boss_overhang])
+                            rotate([0, 90, 0])
+                                cylinder(d = boss_od, h = stand_pillar_w, center = true);
+                    }
                     
                     // Ограничена само до долната половина (до линията на осите)
                     translate([side * (stand_inner_gap / 2 + total_boss_w / 2), 0, stand_center_z / 2])
-                        cube([total_boss_w + 2, stand_depth + 2, stand_center_z], center = true);
+                        cube([total_boss_w, stand_depth + 2, stand_center_z], center = true);
                 }
 
                 // Вътрешно 45-градусово скосяване в основата
@@ -138,12 +162,13 @@ module diff_u_stand() {
         // 2. ИЗРЯЗВАНИЯ И ОТВОРИ (НЕГАТИВ)
         
         // А) Полукръгли легла ф12.10 mm за лагерите (отворени отгоре на Z = stand_center_z)
+        //    + външен праг ф10.0 mm (аксиален стопер откъм външната страна)
         for (side = [-1, 1]) {
-            translate([side * (stand_inner_gap / 2 + total_boss_w / 2), 0, stand_center_z])
+            translate([side * (stand_inner_gap / 2 + stand_brg_seat_w / 2 - 0.05), 0, stand_center_z])
                 rotate([0, 90, 0])
-                    cylinder(d = stand_brg_d, h = total_boss_w + 0.1, center = true);
+                    cylinder(d = stand_brg_d, h = stand_brg_seat_w + 0.1, center = true);
 
-            translate([side * (stand_inner_gap / 2 + total_boss_w + stand_lip_w / 2 - total_boss_w), 0, stand_center_z])
+            translate([side * (stand_inner_gap / 2 + stand_brg_seat_w + stand_lip_w / 2), 0, stand_center_z])
                 rotate([0, 90, 0])
                     cylinder(d = stand_lip_d, h = stand_lip_w + 1.0, center = true);
         }

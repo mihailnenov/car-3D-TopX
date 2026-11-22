@@ -5,7 +5,7 @@
 // директно от детайлните файлове (чрез use <...>), за да остава винаги
 // синхронизиран с тях:
 //
-//   - Flanges + Planet Gears.scad           -> фланци Z=27, отделни оси, сателити Z=10, лагери 6700
+//   - Flanges + Planet Gears.scad           -> фланци Z=27, отделни оси, сателити Z=12, лагери 6700
 //   - Sun Gears -Square + Triangel Holes.scad -> мъжко / женско слънце (8 mm, квадрат + триъгълник)
 //   - Square shaft small.scad                -> стъпаловиден вал + обърната втулка за лагерите
 //   - Defential Stand Bottom.scad            -> П-образна стойка (по избор)
@@ -25,9 +25,9 @@ $fn = 90;
 // 1  = 1/2 надлъжен разрез на целия механизъм
 // 2  = Разглобен изглед (Exploded View)
 // 3  = Шевронен фланец Z=27 - за печат (2 броя)
-// 4  = Отделна сателитна ос 40.0 mm - за печат (6 броя)
-// 5  = Сателит Z=10 LH - за печат (3 броя)
-// 6  = Сателит Z=10 RH - за печат (3 броя)
+// 4  = Отделна сателитна ос 39.0 mm - за печат (6 броя)
+// 5  = Сателит Z=12 LH - за печат (3 броя)
+// 6  = Сателит Z=12 RH - за печат (3 броя)
 // 7  = ЛЯВО слънце (ЖЕНСКО, LH) - за печат (1 брой)
 // 8  = Стъпаловиден вал - за печат (2 броя)
 // 9  = ДЯСНО слънце (МЪЖКО, RH) - за печат (1 брой)
@@ -40,36 +40,45 @@ view_mode = 0;
 
 show_ground  = true;  // true = показва земята (полупрозрачна равнина)
 
-show_stand   = false; // true = показва и стойката в изгледи 0/1/2
-explode_dist = 28.0;  // ТРЯБВА да съвпада с explode_dist във "Flanges + Planet Gears.scad"
+show_stand   = true; // true = показва и стойката в изгледи 0/1/2
 
 
 // ============================================================================
-// РАЗМЕРИ ЗА РАЗПОЛОЖЕНИЕ (копие от детайлните файлове - само за позициониране!)
+// РАЗМЕРИ ЗА РАЗПОЛОЖЕНИЕ (четат се от детайлните файловете чрез *_param() функции)
 // ============================================================================
 
 // От "Flanges + Planet Gears.scad"
-flange_thick   = 6.0;   // Дебелина на фланеца
-carrier_gap    = 28.0;  // Вътрешно разстояние между фланците
-ring_m         = 1.2;   // Модул на външния шевронен венец
-ring_z         = 27;    // Зъби на фланеца (OD = 34.80 mm)
-ring_x         = 0.00;
-ring_beta      = 20;
+flange_thick   = carrier_param("flange_thick"); // 6.0  Дебелина на фланеца
+carrier_gap    = carrier_param("carrier_gap");  // 28.0 Вътрешно разстояние между фланците
+explode_dist   = carrier_param("explode_dist"); // 28.0
+ring_m         = carrier_param("ring_m");       // 1.2  Модул на външния шевронен венец
+ring_z         = carrier_param("ring_z");       // 27   Зъби на фланеца (OD = 34.80 mm)
+ring_x         = carrier_param("ring_x");
+ring_beta      = carrier_param("ring_beta");
 
 // От "Sun Gears -Square + Triangel Holes.scad"
-z_sun          = 10;
-sun_total_w    = 8.0;   // Ширина на слънцето
-center_gap     = 10.0;  // Разстояние между двете слънца (телескоп)
-s2_depth       = 2.0;   // Дълбочина на квадратния отвор в слънцето
+z_sun          = carrier_param("z_sun");        // 12
+sun_total_w    = sun_param("sun_total_w");      // 8.0  Ширина на слънцето
+center_gap     = sun_param("center_gap");       // 10.0 Разстояние между двете слънца (телескоп)
+s2_depth       = sun_param("s2_depth");         // 2.0  Дълбочина на квадратния отвор в слънцето
 
 // От "Square shaft small.scad"
-h1             = 10.0;  // Квадрат 5.65 mm
-h2             = 17.0;  // Квадрат 4.24 mm
-sleeve_total_h = 15.0;  // Обща дължина на втулката
+h1             = shaft_param("h1");             // 10.0 Квадрат 5.65 mm
+h2             = shaft_param("h2");             // 17.0 Квадрат 4.24 mm
+sleeve_total_h = shaft_param("sleeve_total_h"); // 15.0 Обща дължина на втулката
 
 // Изчислено разположение (локални координати: Z = 0 е вътрешното лице на фланеца)
 side_gap   = (carrier_gap - (2 * sun_total_w + center_gap)) / 2; // 1.0 mm между фланеца и слънцето
 shaft_z0   = side_gap - (h1 + h2 - s2_depth);                    // -24.0 mm (начало на вала)
+
+// Фазиране на слънцата: женското (ляво) зацепва десните сателити, мъжкото (дясно) - левите
+tooth_pitch    = carrier_param("tooth_pitch");
+helix_rate     = carrier_param("helix_rate");
+pin_step_h     = carrier_param("pin_step_h");
+sun_f_phase    = wrap_angle(tooth_pitch / 2 + 240 + carrier_param("planet_phase_R")
+                            - helix_rate * (carrier_gap - pin_step_h - side_gap), tooth_pitch);
+sun_m_phase    = wrap_angle(tooth_pitch / 2 + 180 - carrier_param("planet_phase_L")
+                            - helix_rate * (carrier_gap - side_gap - pin_step_h), tooth_pitch);
 
 /* [Задвижващ ШЕВРОНЕН ПИНЬОН (зацепен за левия фланец)] */
 pinion_z        = 12;
@@ -91,7 +100,7 @@ fd_z_wheel    = 14;    // Шевронно колело Z=14 на вала на 
 fd_x_wheel    = 0.00;
 fd_beta       = 20;
 fd_w          = 7.0;   // Ширина на зъбните колела (квадратът е 10 mm, 1.9 mm заема прагът на стойката)
-s1            = 5.65;  // Квадрат на полуоската (от "Square shaft small.scad")
+s1            = shaft_param("s1"); // 5.65 Квадрат на полуоската
 sq_clearance  = 0.10;
 wheel_shaft_d = 5.0;   // Вал на колелото (D-профил)
 wheel_shaft_t = 4.5;   // Плоска част на D-профила
@@ -111,6 +120,13 @@ echo(str("Крайна предавка ", fd_z_wheel, "/", fd_z_drive, " = ", f
          " | Общо: ", (ring_z / pinion_z) * (fd_z_wheel / fd_z_drive), " : 1"));
 echo(str("Ос на колелото: ", wheel_axis_h, " mm | Ос на диференциала: ", diff_axis_h,
          " mm | Долен ръб на венеца: ", ring_bottom_h, " mm над земята"));
+echo(str("Фази: женско слънце ", sun_f_phase, " deg | мъжко слънце ", sun_m_phase,
+         " deg | десни сателити ", carrier_param("planet_phase_R"), " deg"));
+if (abs(stand_param("wheel_axis_drop") - a_final) > 0.001)
+    echo(str("ВНИМАНИЕ: wheel_axis_drop = ", stand_param("wheel_axis_drop"),
+             " mm в \"Defential Stand Bottom.scad\" не съвпада с a_final = ", a_final, " mm!"));
+echo(str("Стойка: горната повърхност на пода е ", stand_param("stand_center_z") - stand_param("stand_base_h") - a_final,
+         " mm под оста на колелото | дъното е ", diff_axis_h - stand_param("stand_center_z"), " mm над земята"));
 
 
 // ============================================================================
@@ -145,11 +161,12 @@ module full_differential_assembly(cutaway = false, exploded = false) {
             carrier_planets_assembly(cutaway = false, exploded = exploded);
 
             // 2. ЛЯВА ПОЛУОСКА: женско слънце (LH) – зацепва десните сателити (RH)
-            half_axle(is_male = false, exploded = exploded);
+            rotate([0, 0, sun_f_phase])
+                half_axle(is_male = false, exploded = exploded);
 
             // 3. ДЯСНА ПОЛУОСКА: мъжко слънце (RH) – зацепва левите сателити (LH)
             translate([0, 0, carrier_gap])
-            rotate([180, 0, 180 / z_sun])
+            rotate([180, 0, sun_m_phase])
                 half_axle(is_male = true, exploded = exploded);
 
             // 4. ЗАДВИЖВАЩ ПИНЬОН (зацепен за левия фланец)
@@ -158,18 +175,20 @@ module full_differential_assembly(cutaway = false, exploded = false) {
                        -flange_thick - (exploded ? explode_dist : 0)])
                 drive_pinion();
 
-            // 5. СТОЙКА (по избор) - оста на стойката (X) съвпада с оста на диференциала (Z)
+            // 5. СТОЙКА (по избор) - оста на стойката (X) съвпада с оста на диференциала (Z),
+            //    горната повърхност на пода е 12.0 mm под оста на колелото
             if (show_stand)
-                translate([22.0, 0, carrier_gap / 2])
+                translate([stand_param("stand_center_z"), 0, carrier_gap / 2])
                 rotate([0, -90, 0])
                     diff_u_stand();
 
             // 6. КРАЙНА ПРЕДАВКА Z=10 -> Z=14 от двете страни (валът на колелото е под полуоската)
-            final_drive_side(exploded = exploded);
+            //    Колелото Z=10 следва завъртането на квадрата на съответната полуоска.
+            final_drive_side(exploded = exploded, shaft_rot = sun_f_phase);
 
             translate([0, 0, carrier_gap])
             rotate([180, 0, 0])
-                final_drive_side(exploded = exploded);
+                final_drive_side(exploded = exploded, shaft_rot = -sun_m_phase);
 
             // 7. ЗЕМЯ (на diff_axis_h под оста на диференциала)
             if (show_ground)
@@ -220,20 +239,22 @@ module half_axle(is_male = true, exploded = false) {
 // ============================================================================
 
 // Една страна в локални координати (като half_axle, но БЕЗ завъртане около оста,
-// за да остане валът на колелото винаги точно отдолу, в посока +X)
-module final_drive_side(exploded = false) {
+// за да остане валът на колелото винаги точно отдолу, в посока +X).
+// shaft_rot = завъртане на квадрата на полуоската в тази координатна система.
+module final_drive_side(exploded = false, shaft_rot = 0) {
     e_shaft = exploded ? explode_dist * 1.60 : 0;
     e_wheel = exploded ? explode_dist * 0.60 : 0;
 
     // А. Z=10 на квадрата 5.65 mm на полуоската (локално Z = -23.5 .. -16.5)
     color("MediumSeaGreen")
     translate([0, 0, fd_z0 - e_shaft])
+    rotate([0, 0, shaft_rot])
         final_drive_gear();
 
     // Б. Z=14 на вала на колелото + самият вал (полупрозрачен)
     translate([a_final + e_wheel, 0, fd_z0 - e_shaft]) {
         color("Orchid")
-        rotate([0, 0, 180 / fd_z_wheel])
+        rotate([0, 0, 180 / fd_z_wheel - shaft_rot * fd_z_drive / fd_z_wheel])
             wheel_gear();
 
         color("Silver", 0.5)

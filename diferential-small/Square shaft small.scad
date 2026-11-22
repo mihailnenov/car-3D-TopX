@@ -58,6 +58,15 @@ sleeve_total_h = l_flange + l_mid + l_top; // 15 мм
 // Размер на квадратния отвор за втулката
 hole_s2 = s2 + clearance; // 4.34 мм
 
+// Достъп до размерите от други файлове (use <...> внася само модули и функции, не и променливи)
+function shaft_param(key) =
+    let (t = [
+        ["s1", s1], ["h1", h1], ["s2", s2], ["h2", h2], ["h3", h3], ["h3_straight", h3_straight],
+        ["clearance", clearance], ["sleeve_total_h", sleeve_total_h]
+    ], i = search([key], t)[0])
+    assert(is_num(i), str("shaft_param: непознат ключ ", key))
+    t[i][1];
+
 
 // =========================================================================
 // --- ПОМОЩНИ МОДУЛИ ---
@@ -99,6 +108,12 @@ module rounded_polygon_2d(n_sides, outer_r, corner_r, extra_offset = 0) {
                 circle(r = eff_r, $fn = 48);
         }
     }
+}
+
+// Напречно сечение на върха на вала (Секция 3); is_hole = true дава отвора (+clearance/2 радиално)
+module shaft_top_profile_2d(is_hole = false) {
+    rounded_polygon_2d(top_profile_type, top_outer_r, top_corner_r,
+                       extra_offset = is_hole ? (clearance / 2) : 0);
 }
 
 module tapered_top_section(is_hole = false) {
