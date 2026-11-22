@@ -8,15 +8,20 @@
 //   - Flanges + Planet Gears.scad           -> фланци Z=27, отделни оси, сателити Z=12, лагери 6700
 //   - Sun Gears -Square + Triangel Holes.scad -> мъжко / женско слънце (8 mm, квадрат + триъгълник)
 //   - Square shaft small.scad                -> стъпаловиден вал + обърната втулка за лагерите
-//   - Defential Stand Bottom.scad            -> П-образна стойка (по избор)
+//   - Defential Stand Bottom.scad            -> П-образна стойка с удължение (шаси) + скоби на пантите
+//   - ../wheel-and-transmission/...          -> шенкел, полуоска-кучешка кост, главина с чашка, джанта
 //
-// Тук остават само: разположението на детайлите в сглобката и пиньонът.
+// Тук остават само: разположението на детайлите в сглобката, пиньонът и крайната предавка.
 // ============================================================================
 
 use <Flanges + Planet Gears.scad>
 use <Sun Gears -Square + Triangel Holes.scad>
 use <Square shaft small.scad>
 use <Defential Stand Bottom.scad>
+use <../wheel-and-transmission/Shenkel.scad>
+use <../wheel-and-transmission/Single Dogbone Shaft.scad>
+use <../wheel-and-transmission/Wheel Axle with Integrated Drive Cup.scad>
+use <../wheel-and-transmission/Wheel Drum.scad>
 
 $fn = 90;
 
@@ -33,14 +38,18 @@ $fn = 90;
 // 9  = ДЯСНО слънце (МЪЖКО, RH) - за печат (1 брой)
 // 10 = Задвижващ ШЕВРОНЕН ПИНЬОН Z=12 - за печат (1 брой)
 // 11 = Втулка за лагерите - за печат (2 броя)
-// 12 = П-образна стойка - за печат (1 брой)
+// 12 = П-образна стойка с удължение до шенкелите - за печат (1 брой)
 // 13 = Шевронно колело Z=10 за полуоската (крайна предавка) - за печат (2 броя)
-// 14 = Шевронно колело Z=14 за вала на колелото - за печат (2 броя)
+// 14 = Шевронно колело Z=14 с главина за MR128 (на полуоската-кучешка кост) - за печат (2 броя)
+// 15 = Скоба на горната панта L - за печат (1 брой)
+// 16 = Скоба на горната панта R (огледална) - за печат (1 брой)
 view_mode = 0;
 
 show_ground  = true;  // true = показва земята (полупрозрачна равнина)
 
-show_stand   = true; // true = показва и стойката в изгледи 0/1/2
+show_stand   = true; // true = показва и стойката (със скобите) в изгледи 0/1/2
+show_wheels  = true; // true = показва шенкелите, полуоските-кучешки кости, главините и колелата
+steer_deg    = 0;    // Ъгъл на завиване на колелата (около осите на пантите)
 
 
 // ============================================================================
@@ -102,9 +111,24 @@ fd_beta       = 20;
 fd_w          = 7.0;   // Ширина на зъбните колела (квадратът е 10 mm, 1.9 mm заема прагът на стойката)
 s1            = shaft_param("s1"); // 5.65 Квадрат на полуоската
 sq_clearance  = 0.10;
-wheel_shaft_d = 5.0;   // Вал на колелото (D-профил)
-wheel_shaft_t = 4.5;   // Плоска част на D-профила
 wheel_d       = 43.0;  // Външен диаметър на гумата (от "Wheel  Drive Mechanism.scad")
+
+/* [Колело Z=14 на полуоската-кучешка кост ("Single Dogbone Shaft.scad")] */
+dogbone_len     = dogbone_param("half_len"); // 27.415 mm от центъра на сферата до правия край
+dogbone_fit_clr = 0.05;  // Хлабина на отвора за набиване на правия край (по контура)
+wg_shoulder_d   = 9.4;   // Рамо - опира само във вътрешната гривна на MR128
+wg_shoulder_h   = 1.0;
+wg_journal_d    = 8.08;  // Шийка за MR128 (8x12x3.5), +1% натяг като втулките на полуоските
+wg_journal_h    = 3.4;
+
+/* [Колело: главина с чашка + джанта ("Wheel Axle with Integrated Drive Cup.scad", "Wheel Drum.scad")] */
+hub_kingpin_z   = hub_param("cup_len") / 2; // 4.0  Оста на пантата е в средата на 8-милиметровата секция
+hub_face_z      = hub_param("face_z");      // 28.0 Чело на главината (опира в дъното на джантата)
+drum_bottom_t   = 3.5;   // Дъно на джантата
+drum_w          = 20.0;  // Ширина на джантата
+drum_board_t    = 2.0;   // Бордове на джантата
+drum_cone_h     = 0.8;   // Преходни конуси до бордовете (гумата е между тях)
+drum_bed_d      = 27.0;  // Легло на гумата
 
 // Междуосово разстояние на крайната предавка (14.655 mm)
 a_final  = fd_m * ((fd_z_drive + fd_z_wheel) / 2 + (fd_x_drive + fd_x_wheel) * 0.85);
@@ -115,6 +139,11 @@ wheel_axis_h  = wheel_d / 2;                          // 21.50 mm
 diff_axis_h   = wheel_axis_h + a_final;               // 36.16 mm
 ring_bottom_h = diff_axis_h - ring_od / 2;            // 18.76 mm (2.74 mm под оста на колелото)
 fd_z0         = shaft_z0 + 0.5;                       // Външно чело на колелото Z=10 (локално Z = -23.5)
+
+// Ос на завиване (шенкел) = център на сферата на полуоската-кучешка кост, чийто прав край
+// е наравно с вътрешното чело на колелото Z=14
+kingpin_z     = fd_z0 + fd_w - dogbone_len;           // -43.915 (локално)
+kingpin_d     = carrier_gap / 2 - kingpin_z;          // 57.915 mm от центъра
 
 echo(str("Крайна предавка ", fd_z_wheel, "/", fd_z_drive, " = ", fd_z_wheel / fd_z_drive,
          " | Общо: ", (ring_z / pinion_z) * (fd_z_wheel / fd_z_drive), " : 1"));
@@ -127,6 +156,15 @@ if (abs(stand_param("wheel_axis_drop") - a_final) > 0.001)
              " mm в \"Defential Stand Bottom.scad\" не съвпада с a_final = ", a_final, " mm!"));
 echo(str("Стойка: горната повърхност на пода е ", stand_param("stand_center_z") - stand_param("stand_base_h") - a_final,
          " mm под оста на колелото | дъното е ", diff_axis_h - stand_param("stand_center_z"), " mm над земята"));
+echo(str("Оси на завиване: ", kingpin_d, " mm от центъра (разстояние ", 2 * kingpin_d,
+         " mm) | Следа (центрове на гумите): ", 2 * (kingpin_d + hub_face_z + drum_bottom_t - drum_w / 2 - hub_kingpin_z), " mm"));
+if (abs(stand_param("kingpin_from_center") - kingpin_d) > 0.001)
+    echo(str("ВНИМАНИЕ: kingpin_from_center = ", stand_param("kingpin_from_center"),
+             " mm в \"Defential Stand Bottom.scad\" не съвпада с ", kingpin_d, " mm!"));
+if (abs(stand_param("wheel_gear_outer_d") - (carrier_gap / 2 - fd_z0)) > 0.001
+    || abs(stand_param("wg_shoulder_h") - wg_shoulder_h) > 0.001)
+    echo(str("ВНИМАНИЕ: wheel_gear_outer_d / wg_shoulder_h в \"Defential Stand Bottom.scad\" не съвпадат с ",
+             carrier_gap / 2 - fd_z0, " / ", wg_shoulder_h, " mm!"));
 
 
 // ============================================================================
@@ -147,7 +185,9 @@ else if (view_mode == 10) drive_pinion();
 else if (view_mode == 11) bearing_sleeve();
 else if (view_mode == 12) diff_u_stand();
 else if (view_mode == 13) final_drive_gear();
-else if (view_mode == 14) wheel_gear();
+else if (view_mode == 14) translate([0, 0, fd_w]) rotate([180, 0, 0]) wheel_gear(); // главината нагоре
+else if (view_mode == 15) kingpin_bracket_print();
+else if (view_mode == 16) mirror([1, 0, 0]) kingpin_bracket_print();
 
 
 // ============================================================================
@@ -179,22 +219,34 @@ module full_differential_assembly(cutaway = false, exploded = false) {
             //    горната повърхност на пода е 12.0 mm под оста на колелото
             if (show_stand)
                 translate([stand_param("stand_center_z"), 0, carrier_gap / 2])
-                rotate([0, -90, 0])
+                rotate([0, -90, 0]) {
                     diff_u_stand();
+                    chassis_brackets();
+                }
 
             // 6. КРАЙНА ПРЕДАВКА Z=10 -> Z=14 от двете страни (валът на колелото е под полуоската)
             //    Колелото Z=10 следва завъртането на квадрата на съответната полуоска.
-            final_drive_side(exploded = exploded, shaft_rot = sun_f_phase);
+            //    + полуоска-кучешка кост, главина с чашка и колело (завиват около пантата)
+            final_drive_side(exploded = exploded, shaft_rot = sun_f_phase, steer = steer_deg);
 
             translate([0, 0, carrier_gap])
             rotate([180, 0, 0])
-                final_drive_side(exploded = exploded, shaft_rot = -sun_m_phase);
+                final_drive_side(exploded = exploded, shaft_rot = -sun_m_phase, steer = steer_deg);
 
-            // 7. ЗЕМЯ (на diff_axis_h под оста на диференциала)
+            // 7. ШЕНКЕЛИ (огледални спрямо центъра, кормилните рамена сочат в една и съща посока -Y)
+            if (show_wheels) {
+                steering_knuckle_side(exploded = exploded, steer = steer_deg);
+
+                translate([0, 0, carrier_gap])
+                mirror([0, 0, 1])
+                    steering_knuckle_side(exploded = exploded, steer = -steer_deg);
+            }
+
+            // 8. ЗЕМЯ (на diff_axis_h под оста на диференциала)
             if (show_ground)
                 color("DarkOliveGreen", 0.25)
-                translate([diff_axis_h, -50, -60])
-                    cube([0.5, 100, carrier_gap + 120]);
+                translate([diff_axis_h, -60, -110])
+                    cube([0.5, 120, carrier_gap + 220]);
         }
 
         if (cutaway)
@@ -241,9 +293,12 @@ module half_axle(is_male = true, exploded = false) {
 // Една страна в локални координати (като half_axle, но БЕЗ завъртане около оста,
 // за да остане валът на колелото винаги точно отдолу, в посока +X).
 // shaft_rot = завъртане на квадрата на полуоската в тази координатна система.
-module final_drive_side(exploded = false, shaft_rot = 0) {
-    e_shaft = exploded ? explode_dist * 1.60 : 0;
-    e_wheel = exploded ? explode_dist * 0.60 : 0;
+// steer = ъгъл на завиване около оста на пантата (+X през центъра на сферата).
+module final_drive_side(exploded = false, shaft_rot = 0, steer = 0) {
+    e_shaft  = exploded ? explode_dist * 1.60 : 0;
+    e_wheel  = exploded ? explode_dist * 0.60 : 0;
+    e_corner = exploded ? explode_dist * 1.00 : 0;
+    wheel_rot = 180 / fd_z_wheel - shaft_rot * fd_z_drive / fd_z_wheel;
 
     // А. Z=10 на квадрата 5.65 mm на полуоската (локално Z = -23.5 .. -16.5)
     color("MediumSeaGreen")
@@ -251,16 +306,95 @@ module final_drive_side(exploded = false, shaft_rot = 0) {
     rotate([0, 0, shaft_rot])
         final_drive_gear();
 
-    // Б. Z=14 на вала на колелото + самият вал (полупрозрачен)
-    translate([a_final + e_wheel, 0, fd_z0 - e_shaft]) {
+    // Б. Z=14 с главина в MR128 + полуоската-кучешка кост, набита в него
+    translate([a_final + e_wheel, 0, fd_z0 - e_shaft])
+    rotate([0, 0, wheel_rot]) {
         color("Orchid")
-        rotate([0, 0, 180 / fd_z_wheel - shaft_rot * fd_z_drive / fd_z_wheel])
             wheel_gear();
 
-        color("Silver", 0.5)
-        translate([0, 0, -20])
-            cylinder(d = wheel_shaft_d, h = 20 + fd_w + 0.5);
+        color("LightSlateGray", 0.65)
+        translate([0, 0, -wg_shoulder_h - 3.5 - e_corner * 0.3])
+            bearing_ring(od = 12.0, id = 8.0, w = 3.45);
+
+        if (show_wheels)
+            translate([0, 0, fd_w - dogbone_len - e_corner * 0.6])
+                dogbone_in_gear_frame();
     }
+
+    // В. Главина с чашка + джанта + гума (завиват около оста на пантата)
+    //    Главината: z = 0..8 в двата лагера 6700 на шенкела (оста на пантата е при z = 4),
+    //    z = 28 - челото (навън). Джантата: кухината ф23 сочи навътре и обхваща основата ф22;
+    //    дъното й (3.5 mm) опира в челото, водачът ф5.8 влиза в отвора ф6, "pill" щифтовете - в каналите.
+    if (show_wheels)
+        translate([a_final + e_wheel, 0, kingpin_z - e_shaft - e_corner])
+        rotate([steer, 0, 0])
+        rotate([0, 0, wheel_rot])
+        rotate([180, 0, 0])                                    // ос Z на главината -> -Z (навън)
+        translate([0, 0, -hub_kingpin_z]) {
+            exact_wheel_hub_conical();
+
+            translate([0, 0, hub_face_z + drum_bottom_t])
+            mirror([0, 0, 1]) {
+                color("DimGray")
+                    wheel_drum_symmetrical();
+
+                color("DarkSlateGray", 0.45)
+                translate([0, 0, drum_board_t + drum_cone_h])
+                    difference() {
+                        cylinder(d = wheel_d, h = drum_w - 2 * (drum_board_t + drum_cone_h));
+                        translate([0, 0, -1])
+                            cylinder(d = drum_bed_d + 0.1, h = drum_w);
+                    }
+            }
+        }
+}
+
+// Полуоска-кучешка кост в координатите на колелото Z=14: оста й X -> +Z, Y -> X, Z (основата) -> Y.
+// Сферата е в началото, правият край е наравно с вътрешното чело на колелото.
+module dogbone_in_gear_frame() {
+    multmatrix([[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0]])
+        single_dogbone_shaft_printable();
+
+    // Стоманен щифт ф1.5 x 9.5 mm в сферата (лежи в каналите на чашката)
+    color("Crimson")
+    rotate([90, 0, 0])
+        cylinder(d = 1.5, h = 9.5, center = true);
+}
+
+// Шенкел + 2 лагера 6700 + щифт и винт на пантата (локални координати като final_drive_side)
+module steering_knuckle_side(exploded = false, steer = 0) {
+    e_shaft  = exploded ? explode_dist * 1.60 : 0;
+    e_corner = exploded ? explode_dist * 1.00 : 0;
+    e_wheel  = exploded ? explode_dist * 0.60 : 0;
+
+    translate([a_final + e_wheel, 0, kingpin_z - e_shaft - e_corner])
+    rotate([steer, 0, 0]) {
+        // Шенкел: ос на лагерите -> Z, панта -> X (вертикално), рамо -> -Y
+        rotate([0, 0, -90])
+        translate([0, 0, -4])
+            steering_block_printable();
+
+        color("Silver")
+        for (z0 = [-4, 0])
+            translate([0, 0, z0])
+                bearing_ring(od = 15.0, id = 10.0, w = 4.0);
+    }
+
+    // Панта (+X = надолу):
+    //   долу  - стоманен щифт ф3 x 6, набит в глух отвор в пода (нищо не излиза под пода) -> 3.4 mm в ухото
+    //   горе  - винт M3x8 отгоре през рамото на скобата (4 mm резба) -> 3.7 mm в ухото
+    fb = stand_param("floor_below_wheel_axis");
+    pin_bottom  = fb + stand_param("kp_pin_depth");  // 14.6 mm под оста (дъното на глухия отвор)
+    arm_top     = fb + 0.3 + 4.0;                    // 16.3 mm над оста на колелото
+    if (show_stand)
+        color("DimGray")
+        translate([a_final, 0, kingpin_z])
+        rotate([0, 90, 0]) {
+            translate([0, 0, pin_bottom - stand_param("kp_pin_len")])
+                cylinder(d = stand_param("kp_pin_d"), h = stand_param("kp_pin_len"));
+            translate([0, 0, -arm_top])          cylinder(d = 3.0, h = 8.0);
+            translate([0, 0, -arm_top - 3.0])    cylinder(d = 5.5, h = 3.0);
+        }
 }
 
 // Z=10 с квадратен отвор 5.75 mm (dogbone ъгли) за полуоската
@@ -272,14 +406,28 @@ module final_drive_gear() {
     }
 }
 
-// Z=14 с D-отвор за вала на колелото
+// Z=14 с главина (рамо ф9.4 + шийка ф8.08 за MR128) навън (-Z) и отвор с профила на правия
+// край на полуоската-кучешка кост (набива се наравно с вътрешното чело, z = fd_w)
 module wheel_gear() {
+    hub_h = wg_shoulder_h + wg_journal_h;
     difference() {
-        herringbone_gear_3d(z = fd_z_wheel, m_val = fd_m, w = fd_w,
-                            beta_val = fd_beta, x_val = fd_x_wheel, hand = -1);
-        translate([0, 0, -0.5])
-            linear_extrude(height = fd_w + 1)
-                d_shape_2d(d = wheel_shaft_d + sq_clearance, flat_t = wheel_shaft_t + sq_clearance);
+        union() {
+            herringbone_gear_3d(z = fd_z_wheel, m_val = fd_m, w = fd_w,
+                                beta_val = fd_beta, x_val = fd_x_wheel, hand = -1);
+
+            translate([0, 0, -wg_shoulder_h])
+                cylinder(d = wg_shoulder_d, h = wg_shoulder_h + 0.05);
+
+            translate([0, 0, -hub_h + 0.25])
+                cylinder(d = wg_journal_d, h = wg_journal_h - 0.25 + 0.01);
+            translate([0, 0, -hub_h])
+                cylinder(d1 = wg_journal_d - 0.5, d2 = wg_journal_d, h = 0.25 + 0.01);
+        }
+
+        translate([0, 0, -hub_h - 0.5])
+            linear_extrude(height = fd_w + hub_h + 1)
+                offset(delta = dogbone_fit_clr)
+                    dogbone_body_profile_2d();
     }
 }
 
