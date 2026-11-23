@@ -194,7 +194,29 @@ else if (view_mode == 16) mirror([1, 0, 0]) kingpin_bracket_print();
 // МОДУЛ: ЦЯЛОСТНА СГЛОБКА
 // ============================================================================
 
+// Вътрешно сглобката е построена с "надолу" = +X (виж бележката по-горе за
+// ВИСОЧИНИ НАД ЗЕМЯТА). Тук цялата геометрия (без земята) се завърта така,
+// че Z да стане вертикалната ос (Z+ = нагоре), а земята - хоризонтална плоча
+// на Z = 0 (с дебелина 1 mm, dX = 250 mm, dY = 250 mm), върху която стъпват
+// гумите: старото X = diff_axis_h (контактната точка на гумата със земята)
+// се мапва точно на Z = 0.
 module full_differential_assembly(cutaway = false, exploded = false) {
+    union() {
+        translate([0, 0, diff_axis_h])
+        rotate([0, 90, 0])
+            full_differential_assembly_local(cutaway = cutaway, exploded = exploded);
+
+        // ЗЕМЯ: хоризонтална плоча на Z = 0, 250 x 250 mm, 1 mm дебелина
+        if (show_ground)
+            color("DarkOliveGreen", 0.25)
+            translate([-125, -125, -1])
+                cube([250, 250, 1]);
+    }
+}
+
+// Локална геометрия на сглобката в старата координатна система
+// (надолу = +X), преди глобалното завъртане към Z-нагоре по-горе.
+module full_differential_assembly_local(cutaway = false, exploded = false) {
     difference() {
         union() {
             // 1. КАСЕТА: 2 фланеца + 6 оси + 6 сателита + 2 лагера 6700
@@ -242,11 +264,6 @@ module full_differential_assembly(cutaway = false, exploded = false) {
                     steering_knuckle_side(exploded = exploded, steer = -steer_deg);
             }
 
-            // 8. ЗЕМЯ (на diff_axis_h под оста на диференциала)
-            if (show_ground)
-                color("DarkOliveGreen", 0.25)
-                translate([diff_axis_h, -60, -110])
-                    cube([0.5, 120, carrier_gap + 220]);
         }
 
         if (cutaway)
