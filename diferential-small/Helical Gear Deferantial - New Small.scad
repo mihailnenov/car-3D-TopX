@@ -9,9 +9,9 @@
 //   - Sun Gears -Square + Triangel Holes.scad -> мъжко / женско слънце (8 mm, квадрат + триъгълник)
 //   - Square shaft small.scad                -> стъпаловиден вал + обърната втулка за лагерите
 //   - Defential Stand Bottom.scad            -> П-образна стойка с удължение (шаси) + скоби на пантите
-//   - ../wheel-and-transmission/...          -> шенкел, полуоска-кучешка кост, главина с чашка, джанта
+//   - ../wheel-and-transmission/...          -> шенкел, полуоска-кучешка кост + колело Z=14 + MR128, главина, джанта
 //
-// Тук остават само: разположението на детайлите в сглобката, пиньонът и крайната предавка.
+// Тук остават само: разположението на детайлите в сглобката, пиньонът и колелото Z=10.
 // ============================================================================
 
 use <Flanges + Planet Gears.scad>
@@ -97,29 +97,27 @@ pinion_hub_d    = 11.0;
 pinion_hub_h    = 5.0;
 pinion_bore_d   = 5.05;
 pinion_flat_t   = 4.05;
+pinion_angle    = 90;    // Позиция около диференциала: 0° = отгоре, +90° = към скобите за шенкела (+Y), -90° = към кормилните рамена (-Y)
 
 // Междуосово разстояние пиньон - фланец Z=27 (23.45 mm)
 a_drive = ring_m * ((ring_z + pinion_z) / 2 + (ring_x + pinion_x) * 0.85) + 0.05;
 
 /* [КРАЙНА ПРЕДАВКА: полуоска -> вал на колелото (шевронни, m = 1.2)] */
-fd_m          = 1.2;
-fd_z_drive    = 10;    // Шевронно колело Z=10 на квадрата 5.65 mm на полуоската
-fd_x_drive    = 0.25;  // +0.25 корекция срещу подрязване на зъбите при Z=10
-fd_z_wheel    = 14;    // Шевронно колело Z=14 на вала на колелото
-fd_x_wheel    = 0.00;
-fd_beta       = 20;
-fd_w          = 7.0;   // Ширина на зъбните колела (квадратът е 10 mm, 1.9 mm заема прагът на стойката)
-s1            = shaft_param("s1"); // 5.65 Квадрат на полуоската
+fd_m          = dogbone_param("fd_m");       // 1.2  (от "Single Dogbone Shaft.scad")
+fd_z_drive    = 10;                          // Шевронно колело Z=10 на квадрата 5.65 mm на полуоската
+fd_x_drive    = 0.25;                        // +0.25 корекция срещу подрязване на зъбите при Z=10
+fd_z_wheel    = dogbone_param("fd_z_wheel"); // 14   Шевронно колело Z=14 (от "Single Dogbone Shaft.scad")
+fd_x_wheel    = dogbone_param("fd_x_wheel"); // 0.00
+fd_beta       = dogbone_param("fd_beta");    // 20
+fd_w          = dogbone_param("fd_w");       // 7.0  Ширина на зъбните колела (от "Single Dogbone Shaft.scad")
+s1            = shaft_param("s1");           // 5.65 Квадрат на полуоската
 sq_clearance  = 0.10;
-wheel_d       = 43.0;  // Външен диаметър на гумата (от "Wheel  Drive Mechanism.scad")
+wheel_d       = 43.0;                        // Външен диаметър на гумата (от "Wheel  Drive Mechanism.scad")
 
-/* [Колело Z=14 на полуоската-кучешка кост ("Single Dogbone Shaft.scad")] */
-dogbone_len     = dogbone_param("half_len"); // 27.415 mm от центъра на сферата до правия край
-dogbone_fit_clr = 0.05;  // Хлабина на отвора за набиване на правия край (по контура)
-wg_shoulder_d   = 9.4;   // Рамо - опира само във вътрешната гривна на MR128
-wg_shoulder_h   = 1.0;
-wg_journal_d    = 8.08;  // Шийка за MR128 (8x12x3.5), +1% натяг като втулките на полуоските
-wg_journal_h    = 3.4;
+/* [Колело Z=14 и лагер MR128 на полуоската ("Single Dogbone Shaft.scad")] */
+dogbone_len   = dogbone_param("half_len");      // 27.415 mm от центъра на сферата до правия край
+wg_shoulder_h = dogbone_param("wg_shoulder_h"); // 1.0 mm
+brg_mr128_w   = dogbone_param("brg_mr128_w");   // 3.5 mm
 
 /* [Колело: главина с чашка + джанта ("Wheel Axle with Integrated Drive Cup.scad", "Wheel Drum.scad")] */
 hub_kingpin_z   = hub_param("cup_len") / 2; // 4.0  Оста на пантата е в средата на 8-милиметровата секция
@@ -231,10 +229,12 @@ module full_differential_assembly_local(cutaway = false, exploded = false) {
             rotate([180, 0, sun_m_phase])
                 half_axle(is_male = true, exploded = exploded);
 
-            // 4. ЗАДВИЖВАЩ ПИНЬОН (зацепен за левия фланец)
+            // 4. ЗАДВИЖВАЩ ПИНЬОН (зацепен за левия фланец, завъртян на pinion_angle към скобите +Y)
             color("Crimson")
+            rotate([0, 0, -pinion_angle])
             translate([-a_drive - (exploded ? explode_dist * 0.45 : 0), 0,
                        -flange_thick - (exploded ? explode_dist : 0)])
+            rotate([0, 0, -pinion_angle * ring_z / pinion_z])
                 drive_pinion();
 
             // 5. СТОЙКА (по избор) - оста на стойката (X) съвпада с оста на диференциала (Z),
@@ -323,15 +323,15 @@ module final_drive_side(exploded = false, shaft_rot = 0, steer = 0) {
     rotate([0, 0, shaft_rot])
         final_drive_gear();
 
-    // Б. Z=14 с главина в MR128 + полуоската-кучешка кост, набита в него
+    // Б. Z=14 с главина в MR128 (от "Single Dogbone Shaft.scad") + полуоската-кучешка кост
     translate([a_final + e_wheel, 0, fd_z0 - e_shaft])
     rotate([0, 0, wheel_rot]) {
         color("Orchid")
             wheel_gear();
 
         color("LightSlateGray", 0.65)
-        translate([0, 0, -wg_shoulder_h - 3.5 - e_corner * 0.3])
-            bearing_ring(od = 12.0, id = 8.0, w = 3.45);
+        translate([0, 0, -wg_shoulder_h - brg_mr128_w - e_corner * 0.3])
+            wheel_gear_bearing();
 
         if (show_wheels)
             translate([0, 0, fd_w - dogbone_len - e_corner * 0.6])
@@ -423,30 +423,8 @@ module final_drive_gear() {
     }
 }
 
-// Z=14 с главина (рамо ф9.4 + шийка ф8.08 за MR128) навън (-Z) и отвор с профила на правия
-// край на полуоската-кучешка кост (набива се наравно с вътрешното чело, z = fd_w)
-module wheel_gear() {
-    hub_h = wg_shoulder_h + wg_journal_h;
-    difference() {
-        union() {
-            herringbone_gear_3d(z = fd_z_wheel, m_val = fd_m, w = fd_w,
-                                beta_val = fd_beta, x_val = fd_x_wheel, hand = -1);
-
-            translate([0, 0, -wg_shoulder_h])
-                cylinder(d = wg_shoulder_d, h = wg_shoulder_h + 0.05);
-
-            translate([0, 0, -hub_h + 0.25])
-                cylinder(d = wg_journal_d, h = wg_journal_h - 0.25 + 0.01);
-            translate([0, 0, -hub_h])
-                cylinder(d1 = wg_journal_d - 0.5, d2 = wg_journal_d, h = 0.25 + 0.01);
-        }
-
-        translate([0, 0, -hub_h - 0.5])
-            linear_extrude(height = fd_w + hub_h + 1)
-                offset(delta = dogbone_fit_clr)
-                    dogbone_body_profile_2d();
-    }
-}
+// (Колелото Z=14 wheel_gear() и лагерът wheel_gear_bearing() се внасят директно от
+//  "../wheel-and-transmission/Single Dogbone Shaft.scad")
 
 
 // ============================================================================
