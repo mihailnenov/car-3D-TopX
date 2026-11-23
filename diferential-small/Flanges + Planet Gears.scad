@@ -19,7 +19,7 @@ $fn = 90;
 // 5 = Сателитно колело Z=12 LH - 16.6mm (принтират се 3 броя)
 // 6 = Сателитно колело Z=12 RH - 16.6mm (принтират се 3 броя)
 // 7 = Единична сателитна ос 39.0mm (вертикално за печат с Brim - 6 броя)
-view_mode = 0;
+view_mode = 3;
 
 /* [Височина на разглобяване за Exploded View] */
 explode_dist     = 28.0;
@@ -78,8 +78,10 @@ carrier_gap      = 28.0;
 
 /* [Отделни сателитни оси - R = 10.561 mm, обща дължина 15 + 17 + 7 = 39.0 mm] */
 pin_step_h       = 10.00; // Височина на основата НАД вътрешното лице на фланеца (5 + 10 = 15.0 mm)
-pin_base_d       = 5.90;  // Права основа ф5.90 mm (+0.5 mm - отпечатаните гнезда излизат по-големи)
-flange_pin_hole  = 5.50;  // Гнездо във фланеца за основата ф5.90 (номинално -0.40 mm, компенсира разширения отпечатан отвор)
+pin_seat_len     = flange_thick - pin_hole_lip_h; // 5.00 mm - дължина на шийката, влизаща в гнездото на фланеца
+pin_seat_d       = 5.05;  // ф5.05 mm - шийка с лек натяг за гнездото ф5.00 mm
+pin_base_d       = 6.10;  // По-дебела основа ф5.90 mm над фланеца (прави 0.425 mm праг/упор към фланеца)
+flange_pin_hole  = 5.00;  // Гнездо във фланеца (дълбочина 5.0 mm)
 pin_hole_lip_h   = 1.00;  // 1.0 mm дебел външен борд на гнездото
 pin_hole_lip_d   = 3.55;  // Отвор през борда ф3.55 mm
 pin_journal_d    = 4.40;  // Работна шийка ф4.40 mm
@@ -281,22 +283,24 @@ module carrier_flange() {
 
 // 2. ОТДЕЛНА САТЕЛИТНА ОС (15 + 17 + 7 = 39.0 mm, фаски 0.5x45° от двете страни!)
 module cantilever_planet_pin() {
-    base_total_h = (flange_thick - pin_hole_lip_h) + pin_step_h; // 5.00 + 10.00 = 15.00 mm
-    c = pin_end_chamfer;                                         // 0.50 mm x 45°
+    base_total_h = pin_seat_len + pin_step_h; // 5.00 + 10.00 = 15.00 mm
+    c = pin_end_chamfer;                      // 0.50 mm x 45°
 
     union() {
-        // Долна фаска 0.5x45° на основата (от Z = 0 до Z = 0.5)
-        cylinder(d1 = pin_base_d - 2 * c, d2 = pin_base_d, h = c);
-
-        // Плътна права основа ф5.90 mm (до Z = 15.00 mm)
+        // 1. Секция, влизаща във фланеца (Z = 0 до 5.00 mm): ф5.05 mm с долна водеща фаска
+        cylinder(d1 = pin_seat_d - 2 * c, d2 = pin_seat_d, h = c);
         translate([0, 0, c - 0.05])
-            cylinder(d = pin_base_d, h = base_total_h - c + 0.05);
+            cylinder(d = pin_seat_d, h = pin_seat_len - c + 0.05);
 
-        // Работна шийка за сателита ф4.40 mm (дължина 17.00 mm)
+        // 2. По-дебела основа с праг (Z = 5.00 до 15.00 mm): ф5.90 mm (упира се в лицето на фланеца)
+        translate([0, 0, pin_seat_len - 0.05])
+            cylinder(d = pin_base_d, h = pin_step_h + 0.05);
+
+        // 3. Работна шийка за сателита (Z = 15.00 до 32.00 mm): ф4.40 mm (дължина 17.00 mm)
         translate([0, 0, base_total_h - 0.05])
             cylinder(d = pin_journal_d, h = pin_journal_len + 0.05);
 
-        // Изтънен връх ф2.90 mm (дължина 7.00 mm) с горна фаска 0.5x45°
+        // 4. Изтънен връх (Z = 32.00 до 39.00 mm): ф2.90 mm (дължина 7.00 mm) с горна фаска 0.5x45°
         translate([0, 0, base_total_h + pin_journal_len]) {
             translate([0, 0, -0.05])
                 cylinder(d = pin_tip_d, h = pin_tip_len - c + 0.05);
