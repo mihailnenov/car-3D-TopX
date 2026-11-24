@@ -8,7 +8,7 @@
 //   - Flanges + Planet Gears.scad           -> фланци Z=27, отделни оси, сателити Z=12, лагери 6700
 //   - Sun Gears -Square + Triangel Holes.scad -> мъжко / женско слънце (8 mm, квадрат + триъгълник)
 //   - Square shaft small.scad                -> стъпаловиден вал + обърната втулка за лагерите
-//   - Defential Stand Bottom.scad            -> П-образна стойка с удължение (шаси) + скоби на пантите
+//   - Defential Stand Bottom.scad            -> П-образна стойка с удължение (шаси) + скоби + лагерни стойки MR128
 //   - ../wheel-and-transmission/...          -> шенкел, полуоска-кучешка кост + колело Z=14 + MR128, главина, джанта
 //
 // Тук остават само: разположението на детайлите в сглобката, пиньонът и колелото Z=10.
@@ -43,6 +43,7 @@ $fn = 90;
 // 14 = Шевронно колело Z=14 с главина за MR128 (на полуоската-кучешка кост) - за печат (2 броя)
 // 15 = Скоба на горната панта L - за печат (1 брой)
 // 16 = Скоба на горната панта R (огледална) - за печат (1 брой)
+// 17 = Отделна лагерна стойка за MR128 на колелото Z=14 - за печат (2 еднакви броя)
 view_mode = 0;
 
 show_ground  = true;  // true = показва земята (полупрозрачна равнина)
@@ -186,6 +187,7 @@ else if (view_mode == 13) final_drive_gear();
 else if (view_mode == 14) translate([0, 0, fd_w]) rotate([180, 0, 0]) wheel_gear(); // главината нагоре
 else if (view_mode == 15) kingpin_bracket_print();
 else if (view_mode == 16) mirror([1, 0, 0]) kingpin_bracket_print();
+else if (view_mode == 17) wheel_bearing_block_print();
 
 
 // ============================================================================
@@ -244,6 +246,8 @@ module full_differential_assembly_local(cutaway = false, exploded = false) {
                 rotate([0, -90, 0]) {
                     diff_u_stand();
                     chassis_brackets();
+                    translate([0, 0, exploded ? 14 : 0])
+                        chassis_wheel_bearing_blocks();
                 }
 
             // 6. КРАЙНА ПРЕДАВКА Z=10 -> Z=14 от двете страни (валът на колелото е под полуоската)
