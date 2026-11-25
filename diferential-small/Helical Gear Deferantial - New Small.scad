@@ -124,7 +124,7 @@ brg_mr128_w   = dogbone_param("brg_mr128_w");   // 3.5 mm
 /* [Колело: главина с чашка + джанта ("Wheel Axle with Integrated Drive Cup.scad", "Wheel Drum.scad")] */
 hub_kingpin_z   = hub_param("cup_len") / 2; // 4.0  Оста на пантата е в средата на 8-милиметровата секция
 hub_face_z      = hub_param("face_z");      // 28.0 Чело на главината (опира в дъното на джантата)
-drum_bottom_t   = 3.5;   // Дъно на джантата
+drum_bottom_t   = 3.0;   // Дъно на джантата
 drum_w          = 20.0;  // Ширина на джантата
 drum_board_t    = 2.0;   // Бордове на джантата
 drum_cone_h     = 0.8;   // Преходни конуси до бордовете (гумата е между тях)

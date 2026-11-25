@@ -3,12 +3,12 @@
 // Outer Boards OD = 30mm (+0.5mm higher) | Drum Bed OD = 27mm | Total Width = 20mm
 // =========================================================================
 
-$fn = 100;
+$fn = 120;
 
 /* [Tyre & Rim Dimensions (mm)] */
 board_od           = 30.0;   // Outer diameter of both boards (flanges)
 drum_bed_od        = 27.0;   // Diameter of cylinder without boards (27mm)
-board_thickness    = 2.0;    // Increased by 0.5mm (now 2.0mm each)
+board_thickness    = 2.0;    // Increased by 0.5mm (now 2.0mm each) 
 transition_cone_h  = 0.8;    // Small symmetrical transition cone height
 
 // ОБЩАТА ширина на целия детайл открай до край е точно 20 мм:
@@ -16,7 +16,7 @@ total_width        = 20.0;
 
 /* [Cup Wall & Bottom Thickness (mm)] */
 drum_wall          = 2.0;    // Radial wall thickness under 27mm bed (leaves 23mm ID)
-bottom_thickness   = 3.5;    // Thickness of bottom mounting plate
+bottom_thickness   = 3.0;    // Thickness of bottom mounting plate
 
 /* [3-Bolt Shaft Mounting Pattern (mm)] */
 num_bolts          = 3;      // 3 mini-bolts at 120 degrees
