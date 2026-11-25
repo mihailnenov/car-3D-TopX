@@ -1,17 +1,15 @@
 // ============================================================================
-// САМОСТОЯТЕЛЕН МОДЕЛ: ЗАОБЛЕНА П-ОБРАЗНА СТОЙКА (ДОЛНА ЧАСТ С КАПАК)
-// - Вътрешен просвет между колонките: 41.8 mm (леглата съвпадат с лагерите MR128 на валовете,
-//   0.9 mm хлабина до външните лица на фланците на касетата - обща дължина 40.0 mm)
-// - Тънки вертикални подпори: 4.0 mm дебелина
-// - Полу-шайби (полуцилиндрични босове) за лагерите MR128 (8x12x3.5 mm)
-// - Външен аксиален упор (полу-праг ф10.0 mm)
-// - Заоблен дизайн с 4 монтажни уши за болтове M3.5
-// - Триъгълно оребряване (1 mm) на основата
-// - Удължение на пода до шенкелите (шаси): език под долното ухо на шенкела (12.0 mm под оста
-//   на колелото), правоъгълен канал + отвори ф2.6 mm (резба M3) за отделните лагерни стойки
-//   MR128 и площадка за скобата на горната панта
+// САМОСТОЯТЕЛЕН МОДЕЛ: ШАСИ С ПОВДИГНАТ ЦЕНТЪР + ОТДЕЛНИ ЛАГЕРНИ СТОЙКИ
+// - Повдигната централна плоча под диференциала: center_raise = 6.5 mm (13.0 mm
+//   просвет над земята, 2.75 mm хлабина до венеца Z=27), свързана с ниските
+//   странични крила (Z = 0..3 mm) чрез 2 наклонени рампи около колелата Z=14
+// - Отделни големи лагерни стойки за 2x MR128 на полуоските (stand_view = 4, 2 бр.):
+//   полукръгли легла, отворени отгоре (обхващат долната половина на лагерите H8xD12),
+//   влизат с правоъгълен шип в канали в повдигнатия център и се завинтват с 2x M3
+//   (отвори ф3.5 mm в крилцата -> ф2.6 mm в шасито)
+// - Отделни малки лагерни стойки за MR128 на колелата Z=14 (stand_view = 3, 2 бр.)
 // - Скоба на горната панта: отделен детайл (stand_view = 1 / 2), L и R са огледални
-// - Отделна лагерна стойка за MR128 на колелото Z=14: stand_view = 3 (2 еднакви броя)
+// - Триъгълно оребряване (1 mm) на повдигнатата основа
 // - 100% FDM принт без подпори
 // ============================================================================
 
@@ -20,23 +18,32 @@ $fn = 90;
 /* [Основни габарити на стойката] */
 stand_inner_gap  = 41.8;  // Вътрешно разстояние между опорите: лагерите MR128 са на 21.0..28.0 mm от центъра
                           // -> легло 20.9..28.1 mm, праг 28.1..29.9 mm (виж "Square shaft small.scad")
-stand_depth      = 28.0;  // Ширина на колонките по ос Y
-stand_base_h     = 3.0;   // Обща дебелина на основната хоризонтална плоча
+stand_depth      = 28.0;  // Ширина на централната част и удълженията по ос Y
+stand_base_h     = 3.0;   // Дебелина на основната плоча
+center_raise     = 6.5;   // Повдигане на централната част под диференциала (Z = 6.5..9.5 mm ->
+                          // 13.0 mm просвет над земята, 2.75 mm до долния ръб на венеца Z=27)
 wheel_axis_drop  = 14.655; // Оста на колелото е под оста на диференциала (крайна предавка a_final
                            // в "Helical Gear Deferantial - New Small.scad": 1.2 * (12 + 0.25 * 0.85))
-floor_below_wheel_axis = 12.0; // Горната повърхност на пода е ТОЧНО 12.0 mm под оста на колелото
+floor_below_wheel_axis = 12.0; // Горната повърхност на ниския под е ТОЧНО 12.0 mm под оста на колелото
 stand_center_z   = stand_base_h + wheel_axis_drop + floor_below_wheel_axis;
-                           // 3.0 + 14.655 + 12.0 = 29.655 mm от дъното (Z=0) до центъра на осите
-                           // (линия на разделяне с капака)
-stand_pillar_w   = 4.0;   // Тънка дебелина на вертикалните подпори (4.0 mm)
+                           // 3.0 + 14.655 + 12.0 = 29.655 mm от долното ниво (Z=0) до оста на диференциала
 
-/* [Подсилващи полу-шайби (босове) за лагерите] */
-boss_od          = 18.0;  // Външен диаметър на полу-шайбата около лагерното легло
-stand_brg_d      = 12.10; // Диаметър на леглото за лагери D12 (0.10 mm толеранс)
-stand_brg_seat_w = 7.20;  // Дължина на леглото (за 2 лагера x 3.5 mm = 7.0 mm)
-stand_lip_w      = 1.80;  // Дебелина на външния праг (аксиален стопер за лагера)
-stand_lip_d      = 10.00; // Проходен отвор ф10.0 mm в прага
-total_boss_w     = stand_brg_seat_w + stand_lip_w; // 9.0 mm обща ширина на шайбата
+/* [Отделни лагерни стойки за 2x MR128 на полуоските (диференциала)] */
+// (влизат в правоъгълен канал в повдигнатия център и се завинтват с 2x M3 през крилцата)
+boss_od           = 18.0;  // Външен диаметър на полукръглото легло около лагерите 2x MR128 (срязано на Z = stand_center_z)
+stand_brg_d       = 12.10; // Полукръгло легло за 2x MR128 (0.10 mm толеранс)
+stand_brg_seat_w  = 7.20;  // Дължина на леглото (за 2 лагера x 3.5 mm = 7.0 mm)
+stand_lip_w       = 1.80;  // Външен аксиален борд (стопер за лагера)
+stand_lip_d       = 10.00; // Проходен полукръгъл отвор ф10.0 mm в борда
+total_boss_w      = stand_brg_seat_w + stand_lip_w; // 9.0 mm обща дебелина на стойката
+db_tab_w          = 14.0;  // Ширина на правоъгълния шип (по Y), влизащ в канала на шасито
+db_tab_bottom_clr = 0.10;  // 0.1 mm над долната равнина на повдигнатия център (да не стърчи отдолу)
+db_slot_clr       = 0.10;  // Хлабина по стените на канала (+0.20 mm общо)
+db_wing_h         = 3.0;   // Дебелина на крилцата (лягат отгоре на повдигнатия под Z = 9.5..12.5)
+db_wing_half_y    = 13.8;  // Полуширина на крилцата по Y (в рамките на stand_depth/2 = 14.0 mm)
+db_wing_hole_y    = 10.8;  // Междуосие на отворите за M3: +/-10.8 mm (21.6 mm)
+db_wing_hole_d    = 3.5;   // Проходен отвор ф3.5 mm в крилцата
+db_tap_d          = 2.6;   // Отвор ф2.6 mm в шасито за резба M3
 
 /* [Триъгълно оребряване на основата] */
 rib_depth        = 1.0;   // Дълбочина на триъгълното оребряване отгоре (последният 1.0 mm)
@@ -44,7 +51,6 @@ rib_wall         = 2.4;   // Дебелина на ребрата и външн�
 
 /* [Заобляне и монтажни уши за M3.5] */
 corner_r         = 4.0;   // Радиус на заобляне на вертикалните ръбове
-corner_fillet_r  = 4.0;   // Вътрешно 45-градусово усилване в основата на колонките
 ear_ext          = 12.0;  // Колко да излизат монтажните уши отстрани (по ос Y)
 mount_hole_d     = 3.8;   // Проходен отвор ф3.8 mm за болт/винт M3.5
 mount_boss_d     = 10.0;  // Външен диаметър на заобленото монтажно ухо
@@ -104,12 +110,13 @@ br_screw_x       = [16.5, 22.0];
 br_screw_d       = 3.2;   // M3 + гайка под пода
 
 /* [Изглед] */
-// 0 = само стойката / шасито (с каналите и отворите ф2.6 mm) - за печат
+// 0 = само шасито (повдигнат център + канали + отвори ф2.6 mm) - за печат
 // 1 = само скоба L - за печат
 // 2 = само скоба R - за печат
-// 3 = само отделната лагерна стойка за MR128 на колелото Z=14 - за печат (2 еднакви броя)
-// 4 = сглобен изглед (основна стойка + 2 скоби + 2 лагерни стойки на местата си)
-// 5 = разглобен изглед (повдигнати скоби и лагерни стойки, за преглед на каналите)
+// 3 = само малката лагерна стойка MR128 (колело Z=14) - за печат (2 еднакви броя)
+// 4 = само голямата лагерна стойка 2x MR128 (диференциал) - за печат (2 еднакви броя)
+// 5 = сглобен изглед (шаси + 2 скоби + 2 малки + 2 големи лагерни стойки)
+// 6 = разглобен изглед (повдигнати скоби и лагерни стойки, за преглед на каналите)
 stand_view = 5;
 
 // Достъп до размерите от други файлове (use <...> внася само модули и функции, не и променливи)
@@ -132,118 +139,59 @@ if (stand_view == 0) diff_u_stand();
 if (stand_view == 1) kingpin_bracket_print();
 if (stand_view == 2) mirror([1, 0, 0]) kingpin_bracket_print();
 if (stand_view == 3) wheel_bearing_block_print();
-if (stand_view == 4) {
+if (stand_view == 4) diff_bearing_block_print();
+if (stand_view == 5) {
     diff_u_stand();
     chassis_brackets();
     chassis_wheel_bearing_blocks();
+    chassis_diff_bearing_blocks();
 }
-if (stand_view == 5) {
+if (stand_view == 6) {
     diff_u_stand();
     translate([0, 0, 14]) {
         chassis_brackets();
         chassis_wheel_bearing_blocks();
+        chassis_diff_bearing_blocks();
     }
 }
 
 // ============================================================================
-// МОДУЛ НА СТОЙКАТА
+// МОДУЛ НА ШАСИТО С ПОВДИГНАТ ЦЕНТЪР И КАНАЛИ ЗА ЛАГЕРНИТЕ СТОЙКИ
 // ============================================================================
 
 module diff_u_stand() {
-    // Обща дължина на основата включва подпорите от двете страни
-    total_len = stand_inner_gap + 2 * total_boss_w; 
+    // Обща дължина на повдигнатия център включва зоните на двете големи стойки (59.8 mm)
+    total_len = stand_inner_gap + 2 * total_boss_w;
     ear_y     = stand_depth / 2 + ear_ext - mount_boss_d / 2;
-    boss_overhang = total_boss_w - stand_pillar_w; // 5.0 mm издадена навън част на шайбата
 
     color("SteelBlue")
     difference() {
-        // 1. ПОЗИТИВНО ТЯЛО (Всичко плътно до линията на осите Z = stand_center_z)
+        // 1. ПОЗИТИВНО ТЯЛО
         union() {
-            // А) Заоблена основна плоча (на Z = 0)
-            hull() {
-                for (dx = [-1, 1], dy = [-1, 1]) {
-                    translate([
-                        dx * (total_len / 2 - corner_r),
-                        dy * (stand_depth / 2 - corner_r),
-                        0
-                    ])
-                    cylinder(r = corner_r, h = stand_base_h);
-                }
-            }
+            // А) Повдигната централна плоча (Z = center_raise .. center_raise + stand_base_h)
+            translate([-total_len / 2, -stand_depth / 2, center_raise])
+                cube([total_len, stand_depth, stand_base_h]);
 
-            // Б) 4 заоблени монтажни уши отстрани (по ос Y)
+            // Б) 4 заоблени монтажни уши отстрани (на нивото на повдигнатия център)
             for (side_x = [-1, 1], side_y = [-1, 1]) {
                 hull() {
                     translate([
                         side_x * (stand_inner_gap / 2 + total_boss_w / 2),
                         side_y * (stand_depth / 2 - corner_r),
-                        0
+                        center_raise
                     ])
                     cylinder(d = mount_boss_d, h = stand_base_h);
 
                     translate([
                         side_x * (stand_inner_gap / 2 + total_boss_w / 2),
                         side_y * ear_y,
-                        0
+                        center_raise
                     ])
                     cylinder(d = mount_boss_d, h = stand_base_h);
                 }
             }
 
-            // В) Лява и дясна вертикална подпора (4 мм дебелина) + полу-шайби за лагерите до Z = stand_center_z
-            for (side = [-1, 1]) {
-                // Основна тънка подпора (от вътрешния просвет 55мм навън с дебелина 4мм)
-                hull() {
-                    for (dx = [0, 1], dy = [-1, 1]) {
-                        translate([
-                            side * (stand_inner_gap / 2 + (dx == 0 ? 0 : stand_pillar_w)),
-                            dy * (stand_depth / 2 - corner_r),
-                            0
-                        ])
-                        cylinder(r = (dx == 0 ? 0.1 : corner_r), h = stand_center_z);
-                    }
-                }
-
-                // Полу-шайба (бос) около лагерното легло (затворена до Z = stand_center_z).
-                // Издадената навън част (извън 4 mm подпора) е подпряна отдолу под 45 deg
-                // (hull с копие, свалено с размера на издаването) - печат без подпори.
-                intersection() {
-                    hull() {
-                        translate([side * (stand_inner_gap / 2 + total_boss_w / 2), 0, stand_center_z])
-                            rotate([0, 90, 0])
-                                cylinder(d = boss_od, h = total_boss_w, center = true);
-
-                        translate([side * (stand_inner_gap / 2 + stand_pillar_w / 2), 0, stand_center_z - boss_overhang])
-                            rotate([0, 90, 0])
-                                cylinder(d = boss_od, h = stand_pillar_w, center = true);
-                    }
-                    
-                    // Ограничена само до долната половина (до линията на осите)
-                    translate([side * (stand_inner_gap / 2 + total_boss_w / 2), 0, stand_center_z / 2])
-                        cube([total_boss_w, stand_depth + 2, stand_center_z], center = true);
-                }
-
-                // Вътрешно 45-градусово скосяване в основата
-                hull() {
-                    for (dy = [-1, 1]) {
-                        translate([
-                            side * (stand_inner_gap / 2 + corner_r),
-                            dy * (stand_depth / 2 - corner_r),
-                            0
-                        ])
-                        cylinder(r = corner_r, h = stand_base_h + corner_fillet_r);
-
-                        translate([
-                            side * (stand_inner_gap / 2),
-                            dy * (stand_depth / 2 - corner_r),
-                            0
-                        ])
-                        cylinder(r = 0.1, h = stand_base_h);
-                    }
-                }
-            }
-
-            // Г) УДЪЛЖЕНИЕ ДО ШЕНКЕЛИТЕ (под + език на пантата), двете страни
+            // В) Удължения до шенкелите + две 41° странични рампи покрай отвора за колелото Z=14
             for (side = [-1, 1])
                 mirror([side > 0 ? 1 : 0, 0, 0])
                     floor_extension_left(total_len);
@@ -251,39 +199,33 @@ module diff_u_stand() {
 
         // 2. ИЗРЯЗВАНИЯ И ОТВОРИ (НЕГАТИВ)
 
-        // Отвори в удължението (правоъгълен канал + ф2.6 за стойката MR128, отвор за пантата, отвори за скобата)
+        // А) Канали и M3 отвори ф2.6 mm за двете големи лагерни стойки на диференциала
+        for (side = [-1, 1]) {
+            translate([side * (stand_inner_gap / 2 + total_boss_w / 2), 0, center_raise + stand_base_h / 2])
+                cube([total_boss_w + 2 * db_slot_clr, db_tab_w + 2 * db_slot_clr, stand_base_h + 2], center = true);
+
+            for (sy = [-1, 1])
+                translate([side * (stand_inner_gap / 2 + total_boss_w / 2), sy * db_wing_hole_y, center_raise - 1])
+                    cylinder(d = db_tap_d, h = stand_base_h + 2);
+        }
+
+        // Б) Отвори в удълженията (правоъгълен канал + ф2.6 за стойката MR128, отвор за пантата, отвори за скобата)
         for (side = [-1, 1])
             mirror([side > 0 ? 1 : 0, 0, 0])
                 floor_extension_holes_left();
-        
-        // А) Полукръгли легла ф12.10 mm за лагерите (отворени отгоре на Z = stand_center_z)
-        //    + външен праг ф10.0 mm (аксиален стопер откъм външната страна)
-        for (side = [-1, 1]) {
-            translate([side * (stand_inner_gap / 2 + stand_brg_seat_w / 2 - 0.05), 0, stand_center_z])
-                rotate([0, 90, 0])
-                    cylinder(d = stand_brg_d, h = stand_brg_seat_w + 0.1, center = true);
-
-            translate([side * (stand_inner_gap / 2 + stand_brg_seat_w + stand_lip_w / 2), 0, stand_center_z])
-                rotate([0, 90, 0])
-                    cylinder(d = stand_lip_d, h = stand_lip_w + 1.0, center = true);
-        }
-
-        // Б) Изрязване на всичко над линията на осите (за да остане чисто долно П-образно тяло с полу-легла)
-        translate([0, 0, stand_center_z + 50])
-            cube([200, 200, 100], center = true);
 
         // В) 4 проходни отвора ф3.8 mm в ушите за болтове M3.5
         for (side_x = [-1, 1], side_y = [-1, 1]) {
             translate([
                 side_x * (stand_inner_gap / 2 + total_boss_w / 2),
                 side_y * ear_y,
-                -1
+                center_raise - 1
             ])
             cylinder(d = mount_hole_d, h = stand_base_h + 2);
         }
 
-        // Г) Триъгълно оребряване в последния 1.0 mm от горната страна на основата
-        translate([0, 0, stand_base_h - rib_depth])
+        // Г) Триъгълно оребряване в последния 1.0 mm от горната страна на повдигнатия център
+        translate([0, 0, center_raise + stand_base_h - rib_depth])
             linear_extrude(height = rib_depth + 0.1)
                 triangular_floor_pockets();
     }
@@ -295,26 +237,27 @@ module diff_u_stand() {
 
 module floor_extension_left(total_len) {
     K = kingpin_from_center;
+    ramp_x_top = total_len / 2;                // 29.9 mm (край на повдигнатия център)
+    ramp_x_bot = ramp_x_top + center_raise;    // 36.4 mm (начало на ниския под)
 
-    // А) Под с пълна ширина до 3.0 mm преди оста на завиване
+    // А) Нисък под с пълна ширина (Z = 0..stand_base_h) от ramp_x_bot до 3.0 mm преди оста на завиване
     hull()
-        for (x = [-(total_len / 2 - corner_r), -(K - ext_floor_end - corner_r)], dy = [-1, 1])
+        for (x = [-(ramp_x_bot + corner_r), -(K - ext_floor_end - corner_r)], dy = [-1, 1])
             translate([x, dy * (ext_floor_w / 2 - corner_r), 0])
                 cylinder(r = corner_r, h = stand_base_h);
+    // Право завършване към рампите при x = -ramp_x_bot
+    translate([-(ramp_x_bot + corner_r), -ext_floor_w / 2, 0])
+        cube([corner_r, ext_floor_w, stand_base_h]);
 
-    // Б) Език под долното ухо на шенкела (горната му повърхност е 12.0 mm под оста на колелото)
-    hull() {
-        translate([-K, 0, 0])
-            cylinder(r = tongue_r, h = stand_base_h);
-        translate([-(K - ext_floor_end - 2), -tongue_w / 2, 0])
-            cube([2, tongue_w, stand_base_h]);
-    }
-
-    // В) Площадка за стъпалото на скобата на горната панта (+Y)
-    hull()
-        for (a = [br_foot_x[0] + 1, br_foot_x[1] - 1], y = [br_y0 + 1, br_y0 + br_t - 1])
-            translate([-K + a, y, 0])
-                cylinder(r = 2, h = stand_base_h);
+    // Б) Две наклонени (~41°) странични рампи покрай отвора за колелото Z=14
+    //    (|Y| > 10.2 mm: заобикалят зъбите на Z=14 при |Y| <= 9.6 mm; +Y рампата спира на 12.8 mm до скобата)
+    for (r = [[-ext_floor_w / 2, ext_floor_w / 2 - 10.2], [10.2, br_y0 - 0.2 - 10.2]])
+        hull() {
+            translate([-ramp_x_top, r[0], center_raise])
+                cube([1.0, r[1], stand_base_h]);
+            translate([-(ramp_x_bot + 1.0), r[0], 0])
+                cube([1.0, r[1], stand_base_h]);
+        }
 }
 
 module floor_extension_holes_left() {
@@ -400,6 +343,72 @@ module chassis_wheel_bearing_blocks() {
         mirror([side > 0 ? 1 : 0, 0, 0])
             translate([-(wb_x0 + wb_total_w), 0, 0])
                 wheel_bearing_block();
+}
+
+// ============================================================================
+// ОТДЕЛНА ГОЛЯМА ЛАГЕРНА СТОЙКА ЗА 2x MR128 НА ДИФЕРЕНЦИАЛА (2 еднакви броя)
+// Локални координати: x = 0..total_boss_w (x=0 е външният борд ф10, x=total_boss_w
+// е входът за 2x MR128 към диференциала), y = 0 е оста, z = 0 е дъното на шасито.
+// ============================================================================
+module diff_bearing_block() {
+    deck_top = center_raise + stand_base_h; // 9.50 mm
+    color("RoyalBlue")
+    difference() {
+        rotate([90, 0, 90])
+            linear_extrude(height = total_boss_w)
+                union() {
+                    // Външен контур около 2x MR128 (над Z = stand_center_z се изрязва до полукръг)
+                    translate([0, stand_center_z])
+                        circle(d = boss_od);
+
+                    // Право стъбло до центъра на лагерите + шип в канала на повдигнатия център
+                    translate([-db_tab_w / 2, center_raise + db_tab_bottom_clr])
+                        square([db_tab_w, stand_center_z - (center_raise + db_tab_bottom_clr)]);
+
+                    // Крилца, лягащи отгоре на повдигнатия център (Z = deck_top .. deck_top + db_wing_h)
+                    translate([-db_wing_half_y, deck_top])
+                        square([2 * db_wing_half_y, db_wing_h]);
+                }
+
+        // А) Полукръгло легло ф12.10 mm за 2x MR128 (влиза откъм x = total_boss_w, дълбочина 7.20 mm)
+        translate([stand_lip_w, 0, stand_center_z])
+            rotate([0, 90, 0])
+                cylinder(d = stand_brg_d, h = stand_brg_seat_w + 0.5);
+
+        // Лека водеща фаска 0.25 mm на входа на леглото
+        translate([total_boss_w - 0.25, 0, stand_center_z])
+            rotate([0, 90, 0])
+                cylinder(d1 = stand_brg_d, d2 = stand_brg_d + 0.4, h = 0.25 + 0.05);
+
+        // Б) Проходен полукръгъл отвор ф10.0 mm през външния борд
+        translate([-0.5, 0, stand_center_z])
+            rotate([0, 90, 0])
+                cylinder(d = stand_lip_d, h = stand_lip_w + 1.0);
+
+        // В) 2x проходни отвора ф3.5 mm в крилцата за болтове M3
+        for (sy = [-1, 1])
+            translate([total_boss_w / 2, sy * db_wing_hole_y, deck_top - 1])
+                cylinder(d = db_wing_hole_d, h = db_wing_h + 2);
+
+        // Г) Срязване над оста (Z = stand_center_z), за да остане полукръгло легло (обхваща долната половина на 2x MR128)
+        translate([-1, -boss_od, stand_center_z])
+            cube([total_boss_w + 2, 2 * boss_od, boss_od]);
+    }
+}
+
+// За 3D печат без подпори: ляга плоско на външното лице x=0 (бордът е отдолу, леглото ф12.10 нагоре)
+module diff_bearing_block_print() {
+    translate([stand_center_z, 0, 0])
+        rotate([0, -90, 0])
+            diff_bearing_block();
+}
+
+// Двете големи лагерни стойки, разположени в координатите на шасито
+module chassis_diff_bearing_blocks() {
+    for (side = [-1, 1])
+        mirror([side > 0 ? 1 : 0, 0, 0])
+            translate([-(stand_inner_gap / 2 + total_boss_w), 0, 0])
+                diff_bearing_block();
 }
 
 // ============================================================================
