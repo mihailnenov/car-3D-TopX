@@ -106,9 +106,14 @@ def herringbone_gear_3d(z: int, m_val: float, w: float, beta_val: float,
 # =============================================================================
 # FULL FLANGE - exactly carrier_flange() from OpenSCAD (Z = -6 .. 0, bosses to +1)
 # =============================================================================
-def carrier_flange() -> Part:
-    body = Pos(0, 0, -flange_thick) * herringbone_gear_3d(
-        ring_z, ring_m, flange_thick, ring_beta, ring_x, hand=1)
+def carrier_flange(plain_d: float | None = None) -> Part:
+    """Full flange. With `plain_d` the herringbone teeth are replaced by a
+    plain cylinder of that diameter; all holes, seats and bosses stay the same."""
+    if plain_d is None:
+        body = Pos(0, 0, -flange_thick) * herringbone_gear_3d(
+            ring_z, ring_m, flange_thick, ring_beta, ring_x, hand=1)
+    else:
+        body = Part(cyl(plain_d, -flange_thick, flange_thick).wrapped)
 
     # 3 spacer bosses dia 5.40 x 1.0 mm around the tip holes
     for i in range(3):
