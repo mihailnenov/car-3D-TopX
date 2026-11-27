@@ -7,6 +7,8 @@
 //   полукръгли легла, отворени отгоре (обхващат долната половина на лагерите H8xD12),
 //   влизат с правоъгълен шип в канали в повдигнатия център и се завинтват с 2x M3
 //   (отвори ф3.4 mm в крилцата -> ф2.65 mm в шасито)
+// - Отделни полукапаци / скоби за притискане на 2x MR128 (stand_view = 5, 2 бр.):
+//   завинтват се с 2x M3 (скрита глава) към горните ушички на големите лагерни стойки
 // - Отделни малки лагерни стойки за MR128 на колелата Z=14 (stand_view = 3, 2 бр.)
 // - Скоба на горната панта: отделен детайл (stand_view = 1 / 2), L и R са огледални
 // - Триъгълно оребряване (1 mm) на повдигнатата основа
@@ -44,6 +46,11 @@ db_wing_half_y    = 13.8;  // Полуширина на крилцата по Y 
 db_wing_hole_y    = 10.8;  // Междуосие на отворите за M3: +/-10.8 mm (21.6 mm)
 db_wing_hole_d    = 3.4;   // Проходен отвор ф3.4 mm в крилцата
 db_tap_d          = 2.65;  // Отвор ф2.65 mm в шасито за резба M3
+db_cap_ear_h      = 4.0;   // Дебелина на ушичките на полукапака (над Z = stand_center_z)
+db_lower_ear_h    = 5.5;   // Височина на горните ушички на долната стойка (под Z = stand_center_z, за резба M3)
+db_cap_half_y     = 14.2;  // Полуширина на ушичките по Y (ф5.4 фаската е изцяло на плоската част)
+db_cap_hole_y     = 11.2;  // Междуосие на болтовете M3 за полукапака: +/-11.2 mm (22.4 mm)
+db_cap_clamp_gap  = 0.10;  // 0.10 mm притискаща хлабина в челото (при стягане притиска лагерите MR128)
 
 /* [Триъгълно оребряване на основата] */
 rib_depth        = 1.0;   // Дълбочина на триъгълното оребряване отгоре (последният 1.0 mm)
@@ -120,10 +127,11 @@ br_tap_d         = 2.65;  // Отвор ф2.65 mm в шасито за наря�
 // 1 = само скоба L - за печат
 // 2 = само скоба R - за печат
 // 3 = само малката лагерна стойка MR128 (колело Z=14) - за печат (2 еднакви броя)
-// 4 = само голямата лагерна стойка 2x MR128 (диференциал) - за печат (2 еднакви броя)
-// 5 = сглобен изглед (шаси + 2 скоби + 2 малки + 2 големи лагерни стойки)
-// 6 = разглобен изглед (повдигнати скоби и лагерни стойки, за преглед на каналите)
-stand_view = 5;
+// 4 = само голямата долна лагерна стойка 2x MR128 (диференциал) - за печат (2 еднакви броя)
+// 5 = само полукапакът (скобата) за 2x MR128 на диференциала - за печат (2 еднакви броя)
+// 6 = сглобен изглед (шаси + 2 скоби + 2 малки + 2 големи стойки + 2 полукапака)
+// 7 = разглобен изглед (скоби и долни стойки на +14 mm, полукапаци на +28 mm)
+stand_view = 6;
 
 // Достъп до размерите от други файлове (use <...> внася само модули и функции, не и променливи)
 function stand_param(key) =
@@ -146,19 +154,23 @@ if (stand_view == 1) kingpin_bracket_print();
 if (stand_view == 2) mirror([1, 0, 0]) kingpin_bracket_print();
 if (stand_view == 3) wheel_bearing_block_print();
 if (stand_view == 4) diff_bearing_block_print();
-if (stand_view == 5) {
+if (stand_view == 5) diff_bearing_cap_print();
+if (stand_view == 6) {
     diff_u_stand();
     chassis_brackets();
     chassis_wheel_bearing_blocks();
     chassis_diff_bearing_blocks();
+    chassis_diff_bearing_caps();
 }
-if (stand_view == 6) {
+if (stand_view == 7) {
     diff_u_stand();
     translate([0, 0, 14]) {
         chassis_brackets();
         chassis_wheel_bearing_blocks();
         chassis_diff_bearing_blocks();
     }
+    translate([0, 0, 28])
+        chassis_diff_bearing_caps();
 }
 
 // ============================================================================
@@ -374,6 +386,10 @@ module diff_bearing_block() {
                     // Крилца, лягащи отгоре на повдигнатия център (Z = deck_top .. deck_top + db_wing_h)
                     translate([-db_wing_half_y, deck_top])
                         square([2 * db_wing_half_y, db_wing_h]);
+
+                    // Горни ушички за монтиране на полукапака (Z = stand_center_z - db_lower_ear_h .. stand_center_z)
+                    translate([-db_cap_half_y, stand_center_z - db_lower_ear_h])
+                        square([2 * db_cap_half_y, db_lower_ear_h]);
                 }
 
         // А) Полукръгло легло ф12.10 mm за 2x MR128 (влиза откъм x = total_boss_w, дълбочина 7.20 mm)
@@ -396,7 +412,12 @@ module diff_bearing_block() {
             translate([total_boss_w / 2, sy * db_wing_hole_y, deck_top])
                 m3_countersunk_hole(db_wing_hole_d, db_wing_h);
 
-        // Г) Срязване над оста (Z = stand_center_z), за да остане полукръгло легло (обхваща долната половина на 2x MR128)
+        // Г) 2x отвора ф2.65 mm в горните ушички за резба M3 (с водеща фаска 0.4 mm отгоре)
+        for (sy = [-1, 1])
+            translate([total_boss_w / 2, sy * db_cap_hole_y, stand_center_z - db_lower_ear_h])
+                m3_tapped_hole(db_tap_d, db_lower_ear_h);
+
+        // Д) Срязване над оста (Z = stand_center_z), за да остане полукръгло легло (обхваща долната половина на 2x MR128)
         translate([-1, -boss_od, stand_center_z])
             cube([total_boss_w + 2, 2 * boss_od, boss_od]);
     }
@@ -415,6 +436,67 @@ module chassis_diff_bearing_blocks() {
         mirror([side > 0 ? 1 : 0, 0, 0])
             translate([-(stand_inner_gap / 2 + total_boss_w), 0, 0])
                 diff_bearing_block();
+}
+
+// ============================================================================
+// ПОЛУКАПАК (СКОБА) ЗА ПРИТИСКАНЕ НА ЛАГЕРИТЕ 2x MR128 (2 еднакви броя)
+// Локални координати като diff_bearing_block(): x = 0..total_boss_w,
+// обхваща горната половина на 2x MR128 и се завинтва с 2x M3 (скрита глава).
+// ============================================================================
+module diff_bearing_cap() {
+    color("DodgerBlue")
+    difference() {
+        rotate([90, 0, 90])
+            linear_extrude(height = total_boss_w)
+                union() {
+                    // Горна дъга около 2x MR128
+                    translate([0, stand_center_z])
+                        circle(d = boss_od);
+
+                    // Ушички за завинтване с 2x M3 (Z = stand_center_z .. stand_center_z + db_cap_ear_h)
+                    translate([-db_cap_half_y, stand_center_z])
+                        square([2 * db_cap_half_y, db_cap_ear_h]);
+                }
+
+        // А) Горна половина на леглото ф12.10 mm за 2x MR128 (дълбочина 7.20 mm)
+        translate([stand_lip_w, 0, stand_center_z])
+            rotate([0, 90, 0])
+                cylinder(d = stand_brg_d, h = stand_brg_seat_w + 0.5);
+
+        // Лека водеща фаска 0.25 mm на входа на леглото
+        translate([total_boss_w - 0.25, 0, stand_center_z])
+            rotate([0, 90, 0])
+                cylinder(d1 = stand_brg_d, d2 = stand_brg_d + 0.4, h = 0.25 + 0.05);
+
+        // Б) Горна половина на външния аксиален борд (отвор ф10.0 mm)
+        translate([-0.5, 0, stand_center_z])
+            rotate([0, 90, 0])
+                cylinder(d = stand_lip_d, h = stand_lip_w + 1.0);
+
+        // В) 2x проходни отвора ф3.4 mm в ушичките със скрита фаска M3 (ф5.4 x 1.65 mm)
+        for (sy = [-1, 1])
+            translate([total_boss_w / 2, sy * db_cap_hole_y, stand_center_z])
+                m3_countersunk_hole(db_wing_hole_d, db_cap_ear_h);
+
+        // Г) Срязване под оста (+db_cap_clamp_gap притискаща хлабина, за да притиска лагера при стягане)
+        translate([-1, -db_cap_half_y - 2, stand_center_z - boss_od])
+            cube([total_boss_w + 2, 2 * db_cap_half_y + 4, boss_od + db_cap_clamp_gap]);
+    }
+}
+
+// За 3D печат без подпори: ляга плоско на външното лице x=0 (бордът е отдолу, леглото ф12.10 нагоре)
+module diff_bearing_cap_print() {
+    translate([stand_center_z, 0, 0])
+        rotate([0, -90, 0])
+            diff_bearing_cap();
+}
+
+// Двата полукапака, разположени в координатите на шасито
+module chassis_diff_bearing_caps() {
+    for (side = [-1, 1])
+        mirror([side > 0 ? 1 : 0, 0, 0])
+            translate([-(stand_inner_gap / 2 + total_boss_w), 0, 0])
+                diff_bearing_cap();
 }
 
 // ============================================================================

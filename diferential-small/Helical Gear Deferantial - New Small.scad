@@ -45,6 +45,7 @@ $fn = 90;
 // 16 = Скоба на горната панта R (огледална) - за печат (1 брой)
 // 17 = Отделна лагерна стойка за MR128 на колелото Z=14 - за печат (2 еднакви броя)
 // 18 = Отделна голяма лагерна стойка 2x MR128 на диференциала - за печат (2 еднакви броя)
+// 19 = Полукапак (скоба) за 2x MR128 на диференциала - за печат (2 еднакви броя)
 view_mode = 0;
 
 show_ground  = true;  // true = показва земята (полупрозрачна равнина)
@@ -190,6 +191,7 @@ else if (view_mode == 15) kingpin_bracket_print();
 else if (view_mode == 16) mirror([1, 0, 0]) kingpin_bracket_print();
 else if (view_mode == 17) wheel_bearing_block_print();
 else if (view_mode == 18) diff_bearing_block_print();
+else if (view_mode == 19) diff_bearing_cap_print();
 
 
 // ============================================================================
@@ -252,6 +254,8 @@ module full_differential_assembly_local(cutaway = false, exploded = false) {
                         chassis_wheel_bearing_blocks();
                         chassis_diff_bearing_blocks();
                     }
+                    translate([0, 0, exploded ? 28 : 0])
+                        chassis_diff_bearing_caps();
                 }
 
             // 6. КРАЙНА ПРЕДАВКА Z=10 -> Z=14 от двете страни (валът на колелото е под полуоската)
